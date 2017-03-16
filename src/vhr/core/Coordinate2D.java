@@ -7,5 +7,4 @@ public class Coordinate2D extends AbstractCoordinate {
     public Coordinate2D(double xCord, double yCord) {
         super(xCord, yCord, 0);
     }
-
 }
