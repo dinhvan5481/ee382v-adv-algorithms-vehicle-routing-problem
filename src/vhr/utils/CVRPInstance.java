@@ -4,6 +4,8 @@ import vhr.core.Customer;
 
 import java.util.HashMap;
 
+import static vhr.utils.StringUtil.appendStringLine;
+
 /**
  * Created by quachv on 3/15/2017.
  */
@@ -13,10 +15,15 @@ public class CVRPInstance {
     private int numberOfNodes;
     private int capacity;
     private HashMap<Integer, Customer> customers;
+    private Customer depot;
 
-    public CVRPInstance(String name) {
-        this.instanceName = name;
+    public CVRPInstance() {
         this.customers = new HashMap<>();
+    }
+
+
+    public void setInstanceName(String name) {
+        this.instanceName = name;
     }
 
     public String getInstanceName() {
@@ -53,4 +60,35 @@ public class CVRPInstance {
         }
         this.customers.put(customer.getId(), customer);
     }
+
+    public Customer getCustomer(int id) {
+        return this.customers.get(id);
+    }
+
+    public Customer getDepot() {
+        return depot;
+    }
+
+    public void setDepot(Customer depot) {
+        this.depot = depot;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        appendStringLine(sb, "Instance name: " + instanceName);
+        if(!comment.isEmpty()) {
+            appendStringLine(sb, "Comment: " + comment);
+        }
+        appendStringLine(sb, "Number of customer: " + numberOfNodes);
+        appendStringLine(sb, "Vehicle capacity: " + capacity);
+        appendStringLine(sb, "Depot: " + depot.toString());
+        for (Integer customerId: customers.keySet()) {
+            Customer customer = customers.get(customerId);
+            appendStringLine(sb, customer.toString());
+        }
+        return sb.toString();
+    }
+
+
 }
