@@ -65,7 +65,7 @@ public class DataSetReader {
                         else if(entryName.equals("comment")) {
                             result.setComment(value);
                         } else if(entryName.equals("dimension")) {
-                            result.setNumberOfNodes(Integer.parseInt(value));
+                            result.setNumberOfCustomers(Integer.parseInt(value));
                         } else if(entryName.equals("capacity")) {
                             result.setCapacity(Integer.parseInt(value));
                         }

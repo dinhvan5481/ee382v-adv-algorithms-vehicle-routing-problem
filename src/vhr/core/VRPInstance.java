@@ -1,7 +1,5 @@
 package vhr.core;
 
-import vhr.core.Customer;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,7 +13,7 @@ import static vhr.utils.StringUtil.appendStringLine;
 public class VRPInstance {
     private String instanceName;
     private String comment;
-    private int numberOfNodes;
+    private int numberOfCustomers;
     private double capacity;
     private HashMap<Integer, Customer> customers;
     private Customer depot;
@@ -41,12 +39,12 @@ public class VRPInstance {
         return comment;
     }
 
-    public int getNumberOfNodes() {
-        return numberOfNodes;
+    public int getNumberOfCustomers() {
+        return numberOfCustomers;
     }
 
-    public void setNumberOfNodes(int numberOfNodes) {
-        this.numberOfNodes = numberOfNodes;
+    public void setNumberOfCustomers(int numberOfCustomers) {
+        this.numberOfCustomers = numberOfCustomers;
     }
 
     public double getCapacity() {
@@ -112,7 +110,7 @@ public class VRPInstance {
         if(!comment.isEmpty()) {
             appendStringLine(sb, "Comment: " + comment);
         }
-        appendStringLine(sb, "Number of customer: " + numberOfNodes);
+        appendStringLine(sb, "Number of customer: " + numberOfCustomers);
         appendStringLine(sb, "Vehicle capacity: " + capacity);
         appendStringLine(sb, "Depot: " + depot.toString());
         for (Integer customerId: customers.keySet()) {
