@@ -14,7 +14,7 @@ public class DeliveryPath {
         to.setPathOut(this);
     }
 
-    public double cost(ICostCalulator calulator) {
+    public double cost(ICostCalculator calulator) {
         return calulator.calculate(this);
     }
 

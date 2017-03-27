@@ -1,5 +1,6 @@
 package vhr.utils;
 
+import vhr.core.VRPInstance;
 import vhr.core.Coordinate2D;
 import vhr.core.Customer;
 
@@ -7,7 +8,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 /**
@@ -15,8 +15,8 @@ import java.util.Arrays;
  */
 public class DataSetReader {
 
-    public static CVRPInstance extractData(String fileName) {
-        CVRPInstance result = new CVRPInstance();
+    public static VRPInstance extractData(String fileName) {
+        VRPInstance result = new VRPInstance();
         boolean isInCoordSection, isInDemandSection, isInDepotSection, isInSpecificationSection;
         try {
             File file = new File(fileName);

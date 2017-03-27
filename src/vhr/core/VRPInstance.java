@@ -1,23 +1,26 @@
-package vhr.utils;
+package vhr.core;
 
 import vhr.core.Customer;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import static vhr.utils.StringUtil.appendStringLine;
 
 /**
  * Created by quachv on 3/15/2017.
  */
-public class CVRPInstance {
+public class VRPInstance {
     private String instanceName;
     private String comment;
     private int numberOfNodes;
-    private int capacity;
+    private double capacity;
     private HashMap<Integer, Customer> customers;
     private Customer depot;
 
-    public CVRPInstance() {
+    public VRPInstance() {
         this.customers = new HashMap<>();
     }
 
@@ -46,11 +49,11 @@ public class CVRPInstance {
         this.numberOfNodes = numberOfNodes;
     }
 
-    public int getCapacity() {
+    public double getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(int capacity) {
+    public void setCapacity(double capacity) {
         this.capacity = capacity;
     }
 
@@ -71,6 +74,35 @@ public class CVRPInstance {
 
     public void setDepot(Customer depot) {
         this.depot = depot;
+        if(customers.containsKey(depot.getId())) {
+            customers.remove(depot.getId());
+        }
+    }
+
+    public boolean isSolutionValid(VRPSolution solution) {
+        boolean result = false;
+        Iterator<VehicleRoute> routeIterator = solution.getRoutes().iterator();
+        Set<Integer> routeCustomers = new HashSet<>();
+        int sizeBefore = 0;
+        while (routeIterator.hasNext()) {
+            VehicleRoute route = routeIterator.next();
+            sizeBefore = routeCustomers.size();
+            routeCustomers.addAll(route.getCustomerKeys());
+            if(sizeBefore + route.numberOfCustomers() != routeCustomers.size()) {
+                return false;
+            }
+            if(route.getTotalDemand() > capacity) {
+                return false;
+            }
+        }
+        if(routeCustomers.size() != customers.size()) {
+            return result;
+        }
+        routeCustomers.removeAll(customers.keySet());
+        if(routeCustomers.size() > 0) {
+            return result;
+        }
+        return true;
     }
 
     @Override

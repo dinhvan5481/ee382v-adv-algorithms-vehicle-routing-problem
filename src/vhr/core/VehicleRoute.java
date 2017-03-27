@@ -1,32 +1,40 @@
 package vhr.core;
 
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Created by quachv on 3/22/2017.
  */
 public class VehicleRoute {
-    private int id;
-    private Customer depot;
-    private HashMap<Integer, Customer> customers;
-    private LinkedList<Customer> path;
-    private HashMap<String, Double> costMatrix;
+    protected int id;
+    protected Customer depot;
+    protected HashMap<Integer, Customer> customers;
+    protected LinkedList<Customer> route;
 
     public VehicleRoute(int id, Customer depot) {
         this.id = id;
         this.depot = depot;
-        this.addCustomer(depot);
-        path = new LinkedList<>();
-        path.push(this.depot);
-        costMatrix = new HashMap<>();
+        route = new LinkedList<>();
     }
 
     public void addCustomer(Customer cusotmer) {
         if(!customers.containsKey(cusotmer.getId())) {
             customers.put(cusotmer.getId(), cusotmer);
-
         }
+    }
+
+    public void removeCustomer(int customerId) {
+        if(customers.containsKey(customerId)) {
+            customers.remove(customerId);
+        }
+    }
+
+    public Set<Integer> getCustomerKeys() {
+        return customers.keySet();
+    }
+
+    public int numberOfCustomers() {
+        return customers.size();
     }
 
     public double getTotalDemand() {
@@ -39,9 +47,34 @@ public class VehicleRoute {
         return result;
     }
 
+    public double getRouteCost(ICostCalculator costCalulator) {
+        double result = 0;
+        Customer from = depot;
+        for (int i = 0; i < route.size() - 1; i++) {
+            Customer to = route.get(i);
+            result += costCalulator.calculate(from, to);
+            from = to;
+        }
+        result += costCalulator.calculate(from, depot);
+        return result;
+    }
+
     public void buildRoute() {
         // TODO: this routine has a lot potential to optimal, and many strategy to build the route
 
+    }
+
+    public boolean isRouteValid() {
+        boolean result = false;
+        if(customers.size() != route.size()) {
+            return result;
+        }
+        for (int i = 0; i < route.size() - 1; i++) {
+            if(!customers.containsKey(route.get(i).getId())) {
+                return result;
+            }
+        }
+        return true;
     }
 
     @Override
