@@ -15,6 +15,10 @@ public class AbstractCoordinate implements ICoordinate {
         this.zCord = zCord;
     }
 
+    public AbstractCoordinate substract(AbstractCoordinate op) {
+        return new AbstractCoordinate(xCord - op.getX(), yCord - op.getY(), zCord - op.getZ());
+    }
+
     @Override
     public double getX() {
         return this.xCord;

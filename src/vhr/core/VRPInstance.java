@@ -1,9 +1,6 @@
 package vhr.core;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 import static vhr.utils.StringUtil.appendStringLine;
 
@@ -68,6 +65,10 @@ public class VRPInstance {
 
     public Customer getDepot() {
         return depot;
+    }
+
+    public Collection<Customer> getCustomers() {
+        return customers.values();
     }
 
     public void setDepot(Customer depot) {

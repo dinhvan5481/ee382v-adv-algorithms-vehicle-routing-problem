@@ -6,7 +6,7 @@ package vhr.core;
 public class Euclid2DDistanceCalculator implements IDistanceCalulator{
 
     @Override
-    public double distance(ICoordinate from, ICoordinate to) {
+    public double calculate(ICoordinate from, ICoordinate to) {
         double result;
         try {
             result = Math.sqrt(Math.pow(from.getX() - to.getX(), 2) + Math.pow(from.getY() - to.getY(), 2));

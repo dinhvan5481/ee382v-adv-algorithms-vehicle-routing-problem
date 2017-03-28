@@ -1,9 +1,9 @@
 package vhr.RuinAndRecreateAlgorithm;
 
-import vhr.core.ICostCalculator;
-import vhr.core.VRPAlgorithm;
-import vhr.core.VRPInstance;
-import vhr.core.VRPSolution;
+import vhr.core.*;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Created by dinhvan5481 on 3/26/17.
@@ -19,21 +19,27 @@ public class RuinAndRecreateAlgorithm implements VRPAlgorithm {
     public VRPSolution solve(VRPInstance vrpInstance) {
         float ruinRate = 0;
         int numberOfNodesWillBeRuined = 0;
-        VRPSolution vrpSolutionK = generateInitialSolution(vrpInstance);
-        VRPSolution vrpSolutionK_p1 = null;
-        RuinStragegy ruinStragegy = null;
+        int runCounter = 0;
+        boolean continueSearchSolutionFlag = true;
+//        VRPSolution vrpSolutionK = generateInitialSolution(vrpInstance);
+//        VRPSolution vrpSolutionK_p1 = null;
+//        RuinStragegy ruinStragegy = null;
+//        HashSet<Customer> unServerdCustomers = new HashSet<>();
+//
+//        // TODO: need to change for loop to while loop which checks on running flag
+//        while (continueSearchSolutionFlag) {
+//            ruinStragegy = chooseRuinStragegy();
+//            ruinRate = selectRuinRate();
+//            numberOfNodesWillBeRuined = (int) Math.ceil(ruinRate * vrpInstance.getNumberOfCustomers());
+//            vrpSolutionK_p1 = ruinStragegy(vrpSolutionK, numberOfNodesWillBeRuined, unServerdCustomers);
+//            recreate(vrpSolutionK_p1, unServerdCustomers);
+//            vrpSolutionK = decideWhatSolutionWillBeUsedForNextLoop(vrpSolutionK, vrpSolutionK_p1);
+//            runCounter++;
+//            checkIfNeedToRunMoreSearch(vrpSolutionK, vrpSolutionK_p1, runCounter);
+//        }
 
-        // TODO: need to change for loop to while loop which checks on running flag
-        for (int numberOfRuns = 0; numberOfRuns < max_run; numberOfRuns++) {
-            ruinStragegy = chooseRuinStragegy();
-            ruinRate = selectRuinRate();
-            numberOfNodesWillBeRuined = (int) Math.ceil(ruinRate * vrpInstance.getNumberOfCustomers());
-            ruinStragegy(vrpSolutionK, numberOfNodesWillBeRuined);
-            vrpSolutionK_p1 = recreate();
-            vrpSolutionK = decideWhatSolutionWillBeUsedForNextLoop(vrpSolutionK, vrpSolutionK_p1);
-        }
-
-        return vrpSolutionK;
+//        return vrpSolutionK;
+        return null;
     }
 
 
