@@ -15,11 +15,11 @@ public class VRPSolution implements Comparable<VRPSolution> {
 
     protected VRPInstance vrpInstance;
     protected HashSet<VehicleRoute> routes;
-    protected ICostCalculator costCalulator;
+    protected ICostCalculator costCalculator;
 
-    public VRPSolution(VRPInstance vrpInstance, ICostCalculator costCalulator) {
+    public VRPSolution(VRPInstance vrpInstance, ICostCalculator costCalculator) {
         routes = new HashSet<>();
-        this.costCalulator = costCalulator;
+        this.costCalculator = costCalculator;
         this.vrpInstance = vrpInstance;
     }
 
@@ -40,7 +40,7 @@ public class VRPSolution implements Comparable<VRPSolution> {
         Iterator<VehicleRoute> routeIterator = routes.iterator();
         while (routeIterator.hasNext()) {
             VehicleRoute route = routeIterator.next();
-            result += route.getRouteCost(costCalulator);
+            result += route.getRouteCost(costCalculator);
         }
         return result;
     }
@@ -52,8 +52,10 @@ public class VRPSolution implements Comparable<VRPSolution> {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        appendStringLine(sb, "Total cost : " + getCost());
         for (VehicleRoute route: routes
              ) {
+            appendStringLine(sb, "Route " + route.getId() + " total cost: " + route.getRouteCost(costCalculator));
             appendStringLine(sb, route.toString());
 
         }

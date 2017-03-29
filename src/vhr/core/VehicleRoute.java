@@ -2,6 +2,8 @@ package vhr.core;
 
 import java.util.*;
 
+import static vhr.utils.StringUtil.appendStringLine;
+
 /**
  * Created by quachv on 3/22/2017.
  */
@@ -15,6 +17,11 @@ public class VehicleRoute {
         this.id = id;
         this.depot = depot;
         route = new LinkedList<>();
+        customers = new HashMap<>();
+    }
+
+    public int getId() {
+        return id;
     }
 
     public void addCustomer(Customer cusotmer) {
@@ -84,11 +91,11 @@ public class VehicleRoute {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        Customer iterator = depot.getPathOut().getTo();
-        while(iterator.getId() != depot.getId()) {
-            sb.append(" " + iterator.getId());
-        }
-        return "VehicleRoute " + id + ":" + sb.toString();
+        appendStringLine(sb, "Route " + id + " total demand: " + getTotalDemand());
+        sb.append(depot.getId());
+        route.forEach((Integer id) -> sb.append(" -> " + id.toString()));
+        sb.append(" -> " + depot.getId());
+        return sb.toString();
     }
 
 }

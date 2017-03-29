@@ -59,36 +59,36 @@ public class GenerateClusteringnIntialSolutionStrategy implements IGenerateIniti
 
         for (Node node : customerNodesWIthPositiveTheta) {
             Customer customer = vrpInstance.getCustomer(node.getId());
-            if(totalDemand + customer.getDemand() < vrpInstance.getCapacity()) {
-                route.push(customer.getId());
-                vehicleRoute.addCustomer(customer);
+            if (totalDemand + customer.getDemand() < vrpInstance.getCapacity()) {
+                totalDemand += customer.getDemand();
             } else {
                 vehicleRoute.setRoute(route);
                 vrpSolution.addRoute(vehicleRoute);
                 route = new LinkedList<>();
-                routeId++;
+                vehicleRoute = new VehicleRoute(++routeId, vrpInstance.getDepot());
                 totalDemand = customer.getDemand();
-                vehicleRoute = new VehicleRoute(routeId, vrpInstance.getDepot());
             }
+            route.push(customer.getId());
+            vehicleRoute.addCustomer(customer);
         }
 
         for (Node node : customerNodesWithNegativeTheta) {
             Customer customer = vrpInstance.getCustomer(node.getId());
             if (totalDemand + customer.getDemand() < vrpInstance.getCapacity()) {
-                route.push(customer.getId());
-                vehicleRoute.addCustomer(customer);
+                totalDemand += customer.getDemand();
             } else {
                 vehicleRoute.setRoute(route);
                 vrpSolution.addRoute(vehicleRoute);
                 route = new LinkedList<>();
-                routeId++;
+                vehicleRoute = new VehicleRoute(++routeId, vrpInstance.getDepot());
                 totalDemand = customer.getDemand();
-                vehicleRoute = new VehicleRoute(routeId, vrpInstance.getDepot());
             }
+            route.push(customer.getId());
+            vehicleRoute.addCustomer(customer);
         }
 
 
-        return null;
+        return vrpSolution;
     }
 
     private class Node {
