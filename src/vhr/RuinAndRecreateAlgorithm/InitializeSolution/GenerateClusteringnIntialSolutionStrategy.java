@@ -11,9 +11,10 @@ import java.util.stream.Collectors;
 public class GenerateClusteringnIntialSolutionStrategy implements IGenerateInitialSolutionStrategy {
 
     private IDistanceCalulator distanceCalulator;
-    public GenerateClusteringnIntialSolutionStrategy(IDistanceCalulator distanceCalulator) {
+    private ICostCalculator costCalculator;
+    public GenerateClusteringnIntialSolutionStrategy(IDistanceCalulator distanceCalulator, ICostCalculator costCalculator) {
         this.distanceCalulator = distanceCalulator;
-
+        this.costCalculator = costCalculator;
     }
 
     @Override
@@ -48,7 +49,45 @@ public class GenerateClusteringnIntialSolutionStrategy implements IGenerateIniti
         List<Node> customerNodesWIthPositiveTheta = customerNodes.stream()
                 .filter(n -> n.getTheta() >= 0).collect(Collectors.toList());
 
-        VH
+        customerNodesWIthPositiveTheta.sort(Comparator.comparingDouble(Node::getTheta));
+
+        VRPSolution vrpSolution = new VRPSolution(vrpInstance, costCalculator);
+        int routeId = 0;
+        VehicleRoute vehicleRoute = new VehicleRoute(routeId, vrpInstance.getDepot());
+        LinkedList<Integer> route = new LinkedList<>();
+        double totalDemand = 0;
+
+        for (Node node : customerNodesWIthPositiveTheta) {
+            Customer customer = vrpInstance.getCustomer(node.getId());
+            if(totalDemand + customer.getDemand() < vrpInstance.getCapacity()) {
+                route.push(customer.getId());
+                vehicleRoute.addCustomer(customer);
+            } else {
+                vehicleRoute.setRoute(route);
+                vrpSolution.addRoute(vehicleRoute);
+                route = new LinkedList<>();
+                routeId++;
+                totalDemand = customer.getDemand();
+                vehicleRoute = new VehicleRoute(routeId, vrpInstance.getDepot());
+            }
+        }
+
+        for (Node node : customerNodesWithNegativeTheta) {
+            Customer customer = vrpInstance.getCustomer(node.getId());
+            if (totalDemand + customer.getDemand() < vrpInstance.getCapacity()) {
+                route.push(customer.getId());
+                vehicleRoute.addCustomer(customer);
+            } else {
+                vehicleRoute.setRoute(route);
+                vrpSolution.addRoute(vehicleRoute);
+                route = new LinkedList<>();
+                routeId++;
+                totalDemand = customer.getDemand();
+                vehicleRoute = new VehicleRoute(routeId, vrpInstance.getDepot());
+            }
+        }
+
+
         return null;
     }
 

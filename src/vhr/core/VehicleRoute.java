@@ -9,7 +9,7 @@ public class VehicleRoute {
     protected int id;
     protected Customer depot;
     protected HashMap<Integer, Customer> customers;
-    protected LinkedList<Customer> route;
+    protected LinkedList<Integer> route;
 
     public VehicleRoute(int id, Customer depot) {
         this.id = id;
@@ -51,7 +51,7 @@ public class VehicleRoute {
         double result = 0;
         Customer from = depot;
         for (int i = 0; i < route.size() - 1; i++) {
-            Customer to = route.get(i);
+            Customer to = customers.get(route.get(i));
             result += costCalulator.calculate(from, to);
             from = to;
         }
@@ -64,13 +64,17 @@ public class VehicleRoute {
 
     }
 
+    public void setRoute(LinkedList<Integer> route) {
+        this.route = route;
+    }
+
     public boolean isRouteValid() {
         boolean result = false;
         if(customers.size() != route.size()) {
             return result;
         }
         for (int i = 0; i < route.size() - 1; i++) {
-            if(!customers.containsKey(route.get(i).getId())) {
+            if(!customers.containsKey(route.get(i))) {
                 return result;
             }
         }
