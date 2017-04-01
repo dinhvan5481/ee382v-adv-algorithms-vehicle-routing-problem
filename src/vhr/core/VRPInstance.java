@@ -1,9 +1,10 @@
 package vhr.core;
 
+import java.io.IOException;
 import java.util.*;
 
 import static vhr.utils.StringUtil.appendStringLine;
-
+import java.io.FileWriter;
 /**
  * Created by quachv on 3/15/2017.
  */
@@ -121,5 +122,24 @@ public class VRPInstance {
         return sb.toString();
     }
 
+    public void toCSV(String fileName) {
+        StringBuilder sb = new StringBuilder();
+        FileWriter fileWriter = null;
+        Collection<Customer> customers = this.customers.values();
+        appendStringLine(sb, depot.getId() + " " + depot.getCoordinate().getX() + " " + depot.getCoordinate().getY());
+        customers.forEach((Customer customer) -> {
+            appendStringLine(sb, customer.getId() + " " + customer.getCoordinate().getX() + " " + customer.getCoordinate().getY());
+        });
 
+        try {
+            fileWriter = new FileWriter(fileName);
+            fileWriter.write(sb.toString(), 0, sb.length());
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 }

@@ -9,13 +9,15 @@ import vhr.utils.DataSetReader;
  */
 public class Main {
     public static void main(String[] args) {
+        String fileName = "./data/A-VRP/A-n37-k6.vrp";
+        String routeSolutionFileName = "./solutions/A-VRP/A-n37-k6.csv";
         IDistanceCalulator distanceCalulator = new Euclid2DDistanceCalculator();
         ICostCalculator costCalculator = new CVRPCostCalculator(distanceCalulator);
         GenerateClusteringnIntialSolutionStrategy generateInitialSolution = new GenerateClusteringnIntialSolutionStrategy(distanceCalulator, costCalculator);
-        VRPInstance cvhrInstance = DataSetReader.extractData("./data/A-VRP/A-n37-k6.vrp");
+        VRPInstance cvhrInstance = DataSetReader.extractData(fileName);
+        cvhrInstance.toCSV(fileName.replace(".vrp", ".csv"));
         VRPSolution vrpSolution = generateInitialSolution.generateSolution(cvhrInstance);
-        System.out.print(vrpSolution.toString());
-        System.out.print(vrpSolution.isAValidSolution());
+        vrpSolution.toCSV(routeSolutionFileName);
 
 
     }

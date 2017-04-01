@@ -1,5 +1,7 @@
 package vhr.core;
 
+import javafx.util.Builder;
+
 import java.util.*;
 
 import static vhr.utils.StringUtil.appendStringLine;
@@ -9,46 +11,43 @@ import static vhr.utils.StringUtil.appendStringLine;
  */
 public class VehicleRoute {
     protected int id;
-    protected Customer depot;
-    protected HashMap<Integer, Customer> customers;
+    protected final VRPInstance vrpInstance;
+    protected Set<Integer> customerIds;
     protected LinkedList<Integer> route;
 
-    public VehicleRoute(int id, Customer depot) {
+    public VehicleRoute(int id, final VRPInstance vrpInstance) {
         this.id = id;
-        this.depot = depot;
+        this.vrpInstance = vrpInstance;
         route = new LinkedList<>();
-        customers = new HashMap<>();
+        customerIds = new HashSet<>();
     }
 
     public int getId() {
         return id;
     }
 
-    public void addCustomer(Customer cusotmer) {
-        if(!customers.containsKey(cusotmer.getId())) {
-            customers.put(cusotmer.getId(), cusotmer);
-        }
+    public void addCustomer(int customerId) {
+        customerIds.add(customerId);
     }
 
     public void removeCustomer(int customerId) {
-        if(customers.containsKey(customerId)) {
-            customers.remove(customerId);
-        }
+        customerIds.remove(customerId);
+        route.remove(new Integer(customerId));
     }
 
     public Set<Integer> getCustomerKeys() {
-        return customers.keySet();
+        return customerIds;
     }
 
     public int numberOfCustomers() {
-        return customers.size();
+        return customerIds.size();
     }
 
     public double getTotalDemand() {
         double result = 0;
         for (Integer customerId :
-                customers.keySet()) {
-            Customer customer = customers.get(customerId);
+                customerIds.keySet()) {
+            Customer customer = customerIds.get(customerId);
             result += customer.getDemand();
         }
         return result;
@@ -58,7 +57,7 @@ public class VehicleRoute {
         double result = 0;
         Customer from = depot;
         for (int i = 0; i < route.size() - 1; i++) {
-            Customer to = customers.get(route.get(i));
+            Customer to = customerIds.get(route.get(i));
             result += costCalulator.calculate(from, to);
             from = to;
         }
@@ -66,22 +65,21 @@ public class VehicleRoute {
         return result;
     }
 
-    public void buildRoute() {
-        // TODO: this routine has a lot potential to optimal, and many strategy to build the route
-
-    }
-
     public void setRoute(LinkedList<Integer> route) {
         this.route = route;
     }
 
+    public LinkedList<Integer> getRoute() {
+        return this.route;
+    }
+
     public boolean isRouteValid() {
         boolean result = false;
-        if(customers.size() != route.size()) {
+        if(customerIds.size() != route.size()) {
             return result;
         }
         for (int i = 0; i < route.size() - 1; i++) {
-            if(!customers.containsKey(route.get(i))) {
+            if(!customerIds.containsKey(route.get(i))) {
                 return result;
             }
         }
@@ -97,5 +95,6 @@ public class VehicleRoute {
         sb.append(" -> " + depot.getId());
         return sb.toString();
     }
+
 
 }

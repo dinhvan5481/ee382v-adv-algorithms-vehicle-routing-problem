@@ -5,41 +5,44 @@ package vhr.core;
  */
 
 
+import javafx.util.Builder;
+
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 import static vhr.utils.StringUtil.appendStringLine;
 
-public class VRPSolution implements Comparable<VRPSolution> {
+public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
 
-
-
-    protected VRPInstance vrpInstance;
-    protected HashSet<VehicleRoute> routes;
+    protected final VRPInstance vrpInstance;
+    protected HashMap<Integer, VehicleRoute> routes;
     protected ICostCalculator costCalculator;
 
     public VRPSolution(VRPInstance vrpInstance, ICostCalculator costCalculator) {
-        routes = new HashSet<>();
+        routes = new HashMap<>();
         this.costCalculator = costCalculator;
         this.vrpInstance = vrpInstance;
     }
-
-    public VRPInstance getVrpInstance() {
-        return vrpInstance;
+    public Collection<VehicleRoute> getRoutes() {
+        return routes.values();
     }
 
-    public HashSet<VehicleRoute> getRoutes() {
-        return routes;
-    }
-
-    public void addRoute(VehicleRoute route) {
-        routes.add(route);
+    public VehicleRoute createNewRoute() {
+        int routeId = 0;
+        while (routes.keySet().contains(routeId)) {
+            routeId++;
+        }
+        VehicleRoute newVehicleRoute = new VehicleRouteBuilder(routeId, vrpInstance).build();
+        routes.put(routeId, newVehicleRoute);
+        return newVehicleRoute;
     }
 
     public double getCost() {
         double result = 0;
-        Iterator<VehicleRoute> routeIterator = routes.iterator();
+        Iterator<Integer> routeIterator = routes.keySet().iterator();
         while (routeIterator.hasNext()) {
-            VehicleRoute route = routeIterator.next();
+            VehicleRoute route = routes.get(routeIterator.next());
             result += route.getRouteCost(costCalculator);
         }
         return result;
@@ -53,13 +56,33 @@ public class VRPSolution implements Comparable<VRPSolution> {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         appendStringLine(sb, "Total cost : " + getCost());
-        for (VehicleRoute route: routes
-             ) {
-            appendStringLine(sb, "Route " + route.getId() + " total cost: " + route.getRouteCost(costCalculator));
-            appendStringLine(sb, route.toString());
-
+        for (Integer routeId: routes.keySet()) {
+            appendStringLine(sb, "Route " + routeId + " total cost: " + routes.get(routeId).getRouteCost(costCalculator));
+            appendStringLine(sb, routeId.toString());
         }
         return sb.toString();
+    }
+
+    public void toCSV(String fileName) {
+        StringBuilder sb = new StringBuilder();
+        FileWriter fileWriter = null;
+        routes.values().forEach((VehicleRoute route) -> {
+            sb.append(vrpInstance.getDepot().getId() + " ");
+            route.route.forEach((Integer customerId) -> {
+                sb.append(customerId + " ");
+            });
+            sb.append(vrpInstance.getDepot().getId());
+            appendStringLine(sb, "");
+        });
+        try {
+            fileWriter = new FileWriter(fileName);
+            fileWriter.write(sb.toString(), 0, sb.length());
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -93,5 +116,41 @@ public class VRPSolution implements Comparable<VRPSolution> {
             }
         }
         return equal;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        VRPSolution newVRPSolution = null;//VRPSolution(vrpInstance, costCalculator)
+
+
+        return newVRPSolution;
+    }
+
+    public static class VRPSolutionBuilder implements Builder<VRPSolution>{
+        private final VRPInstance vrpInstance;
+        private final ICostCalculator costCalculator;
+
+        public VRPSolutionBuilder(VRPInstance vrpInstance, ICostCalculator costCalculator) {
+            this.vrpInstance = vrpInstance;
+            this.costCalculator = costCalculator;
+        }
+
+        @Override
+        public VRPSolution build() {
+            return new VRPSolution(vrpInstance, costCalculator);
+        }
+    }
+
+
+    public static class VehicleRouteBuilder  implements Builder<VehicleRoute> {
+        private VehicleRoute route;
+        public VehicleRouteBuilder(int routeId, VRPInstance vrpInstance) {
+            this.route = new VehicleRoute(routeId, vrpInstance);
+        }
+
+        @Override
+        public VehicleRoute build() {
+            return route;
+        }
     }
 }

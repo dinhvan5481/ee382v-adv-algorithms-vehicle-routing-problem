@@ -30,8 +30,7 @@ public class RuinAndRecreateAlgorithm implements VRPAlgorithm {
 //        while (continueSearchSolutionFlag) {
 //            ruinStragegy = chooseRuinStragegy();
 //            ruinRate = selectRuinRate();
-//            numberOfNodesWillBeRuined = (int) Math.ceil(ruinRate * vrpInstance.getNumberOfCustomers());
-//            vrpSolutionK_p1 = ruinStragegy(vrpSolutionK, numberOfNodesWillBeRuined, unServerdCustomers);
+//            vrpSolutionK_p1 = ruinStragegy(vrpInstance, vrpSolutionK, ruinRate);
 //            recreate(vrpSolutionK_p1, unServerdCustomers);
 //            vrpSolutionK = decideWhatSolutionWillBeUsedForNextLoop(vrpSolutionK, vrpSolutionK_p1);
 //            runCounter++;
