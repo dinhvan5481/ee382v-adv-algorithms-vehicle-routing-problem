@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
  */
 public class GenerateClusteringnIntialSolutionStrategy implements IGenerateInitialSolutionStrategy {
 
-    private IDistanceCalulator distanceCalulator;
+    private IDistanceCalculator distanceCalulator;
     private ICostCalculator costCalculator;
-    public GenerateClusteringnIntialSolutionStrategy(IDistanceCalulator distanceCalulator, ICostCalculator costCalculator) {
+    public GenerateClusteringnIntialSolutionStrategy(IDistanceCalculator distanceCalulator, ICostCalculator costCalculator) {
         this.distanceCalulator = distanceCalulator;
         this.costCalculator = costCalculator;
     }

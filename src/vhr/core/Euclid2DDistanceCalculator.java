@@ -3,7 +3,7 @@ package vhr.core;
 /**
  * Created by dinhvan5481 on 3/15/17.
  */
-public class Euclid2DDistanceCalculator implements IDistanceCalulator{
+public class Euclid2DDistanceCalculator implements IDistanceCalculator {
 
     @Override
     public double calculate(ICoordinate from, ICoordinate to) {

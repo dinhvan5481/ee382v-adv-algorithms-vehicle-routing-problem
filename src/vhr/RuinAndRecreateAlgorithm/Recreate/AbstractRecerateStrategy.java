@@ -1,7 +1,7 @@
 package vhr.RuinAndRecreateAlgorithm.Recreate;
 
 import vhr.core.ICostCalculator;
-import vhr.core.IDistanceCalulator;
+import vhr.core.IDistanceCalculator;
 import vhr.core.VRPInstance;
 import vhr.core.VRPSolution;
 
@@ -15,16 +15,16 @@ public abstract class AbstractRecerateStrategy implements IRecreateStrategy {
 
     protected VRPInstance vrpInstance;
     protected ICostCalculator costCalculator;
-    protected IDistanceCalulator distanceCalulator;
+    protected IDistanceCalculator distanceCalulator;
 
-    protected AbstractRecerateStrategy(VRPInstance vrpInstance, ICostCalculator costCalculator, IDistanceCalulator distanceCalulator) {
+    protected AbstractRecerateStrategy(VRPInstance vrpInstance, ICostCalculator costCalculator, IDistanceCalculator distanceCalulator) {
         this.vrpInstance = vrpInstance;
         this.costCalculator = costCalculator;
         this.distanceCalulator = distanceCalulator;
     }
 
     @Override
-    public VRPSolution recreate(VRPSolution ruinedSolution, List<Integer> unservedCustomer) {
+    public VRPSolution recreate(VRPSolution ruinedSolution, List<Integer> removedCustomerIds) {
         VRPSolution copiedRuinedSolution = null;
         try {
             copiedRuinedSolution = ruinedSolution.clone();
@@ -32,9 +32,10 @@ public abstract class AbstractRecerateStrategy implements IRecreateStrategy {
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
-        List<Integer> copiedUnservedCustomer = new ArrayList<>(unservedCustomer);
-        return recreateRuinedSolution(copiedRuinedSolution, copiedUnservedCustomer);
+        List<Integer> copiedUnservedCustomer = new ArrayList<>(removedCustomerIds);
+        recreateRuinedSolution(copiedRuinedSolution, copiedUnservedCustomer);
+        return copiedRuinedSolution;
     }
 
-    protected abstract VRPSolution recreateRuinedSolution(VRPSolution ruinedSolution, List<Integer> unservedCustomers);
+    protected abstract void recreateRuinedSolution(VRPSolution ruinedSolution, List<Integer> removedCustomerIds);
 }

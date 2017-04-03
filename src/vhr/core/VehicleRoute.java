@@ -53,15 +53,7 @@ public class VehicleRoute implements Cloneable{
     }
 
     public double getRouteCost(ICostCalculator costCalulator) {
-        double result = 0;
-        Customer from = vrpInstance.getDepot();
-        for (int i = 0; i < route.size() - 1; i++) {
-            Customer to = vrpInstance.getCustomer(route.get(i));
-            result += costCalulator.calculate(from, to);
-            from = to;
-        }
-        result += costCalulator.calculate(from, vrpInstance.getDepot());
-        return result;
+        return costCalulator.calculateRouteCost(route);
     }
 
     public void setRoute(LinkedList<Integer> route) {

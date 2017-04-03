@@ -32,6 +32,10 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         routes.put(route.id, route);
     }
 
+    public VehicleRoute getRoute(int routeId) {
+        return routes.get(routeId);
+    }
+
     public VehicleRoute createNewRoute() {
         int routeId = 0;
         while (routes.keySet().contains(routeId)) {
