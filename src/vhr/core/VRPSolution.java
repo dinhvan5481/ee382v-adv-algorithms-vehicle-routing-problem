@@ -28,6 +28,10 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         return routes.values();
     }
 
+    public void addRoute(VehicleRoute route) {
+        routes.put(route.id, route);
+    }
+
     public VehicleRoute createNewRoute() {
         int routeId = 0;
         while (routes.keySet().contains(routeId)) {
@@ -38,7 +42,7 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         return newVehicleRoute;
     }
 
-    public double getCost() {
+    public double getSolutionCost() {
         double result = 0;
         Iterator<Integer> routeIterator = routes.keySet().iterator();
         while (routeIterator.hasNext()) {
@@ -48,14 +52,14 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         return result;
     }
 
-    public boolean isAValidSolution() {
-        return this.vrpInstance.isSolutionValid(this);
+    public boolean isSolutionValid() {
+        return this.vrpInstance.isValid(this);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        appendStringLine(sb, "Total cost : " + getCost());
+        appendStringLine(sb, "Total cost : " + getSolutionCost());
         for (Integer routeId: routes.keySet()) {
             appendStringLine(sb, "Route " + routeId + " total cost: " + routes.get(routeId).getRouteCost(costCalculator));
             appendStringLine(sb, routeId.toString());
@@ -92,24 +96,24 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         int equal = 0;
         int worse = 1;
 
-        if(!o.isAValidSolution() && !this.isAValidSolution()) {
+        if(!o.isSolutionValid() && !this.isSolutionValid()) {
             return equal;
         }
 
-        if(!o.isAValidSolution() && this.isAValidSolution()) {
+        if(!o.isSolutionValid() && this.isSolutionValid()) {
             return better;
         }
 
-        if(o.isAValidSolution() && !this.isAValidSolution()) {
+        if(o.isSolutionValid() && !this.isSolutionValid()) {
             return worse;
         }
 
-        if(o.isAValidSolution() & this.isAValidSolution()) {
+        if(o.isSolutionValid() & this.isSolutionValid()) {
             double esp = 10^-5;
-            if(routes.size() == o.routes.size() && (o.getCost() - this.getCost()) < esp) {
+            if(routes.size() == o.routes.size() && (o.getSolutionCost() - this.getSolutionCost()) < esp) {
                 return equal;
             }
-            if((o.getCost() - this.getCost()) > esp) {
+            if((o.getSolutionCost() - this.getSolutionCost()) > esp) {
                 return better;
             } else {
                 return worse;
@@ -118,10 +122,15 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         return equal;
     }
 
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        VRPSolution newVRPSolution = null;//VRPSolution(vrpInstance, costCalculator)
-
+    public VRPSolution clone() throws CloneNotSupportedException {
+        VRPSolution newVRPSolution = new VRPSolutionBuilder(vrpInstance, costCalculator).build();
+        routes.forEach((k, v) -> {
+            try {
+                newVRPSolution.addRoute(v.clone());
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+        });
 
         return newVRPSolution;
     }

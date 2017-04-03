@@ -52,8 +52,7 @@ public class GenerateClusteringnIntialSolutionStrategy implements IGenerateIniti
         customerNodesWIthPositiveTheta.sort(Comparator.comparingDouble(Node::getTheta));
 
         VRPSolution vrpSolution = new VRPSolution(vrpInstance, costCalculator);
-        int routeId = 0;
-        VehicleRoute vehicleRoute = new VehicleRoute(routeId, vrpInstance.getDepot());
+        VehicleRoute vehicleRoute = vrpSolution.createNewRoute();
         LinkedList<Integer> route = new LinkedList<>();
         double totalDemand = 0;
 
@@ -65,11 +64,11 @@ public class GenerateClusteringnIntialSolutionStrategy implements IGenerateIniti
                 vehicleRoute.setRoute(route);
                 vrpSolution.addRoute(vehicleRoute);
                 route = new LinkedList<>();
-                vehicleRoute = new VehicleRoute(++routeId, vrpInstance.getDepot());
+                vehicleRoute = vrpSolution.createNewRoute();
                 totalDemand = customer.getDemand();
             }
             route.push(customer.getId());
-            vehicleRoute.addCustomer(customer);
+            vehicleRoute.addCustomer(customer.getId());
         }
 
         for (Node node : customerNodesWithNegativeTheta) {
@@ -80,11 +79,11 @@ public class GenerateClusteringnIntialSolutionStrategy implements IGenerateIniti
                 vehicleRoute.setRoute(route);
                 vrpSolution.addRoute(vehicleRoute);
                 route = new LinkedList<>();
-                vehicleRoute = new VehicleRoute(++routeId, vrpInstance.getDepot());
+                vehicleRoute = vrpSolution.createNewRoute();
                 totalDemand = customer.getDemand();
             }
             route.push(customer.getId());
-            vehicleRoute.addCustomer(customer);
+            vehicleRoute.addCustomer(customer.getId());
         }
 
 

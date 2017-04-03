@@ -19,15 +19,21 @@ public class RandomRuinStrategy extends AbstractRuinStrategy {
     @Override
     protected VRPSolution ruinSolution(VRPInstance vrpInstance, VRPSolution vrpSolution, double ruinRate) {
         int numberOfNodeWillBeRemoved = (int) Math.floor(ruinRate * vrpInstance.getNumberOfCustomers());
+        VRPSolution ruinedSolution = null;
+        try {
+            ruinedSolution = vrpSolution.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
         for (int i = 0; i < numberOfNodeWillBeRemoved; i++) {
             removedCustomerIds.add(random.nextInt());
         }
 
-        vrpSolution.getRoutes().forEach((VehicleRoute route) -> {
+        ruinedSolution.getRoutes().forEach((VehicleRoute route) -> {
             removedCustomerIds.forEach((Integer customerId) -> {
                 route.removeCustomer(customerId);
             });
         });
-        return null;
+        return ruinedSolution;
     }
 }

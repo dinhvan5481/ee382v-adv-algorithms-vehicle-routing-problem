@@ -79,7 +79,7 @@ public class VRPInstance {
         }
     }
 
-    public boolean isSolutionValid(VRPSolution solution) {
+    public boolean isValid(VRPSolution solution) {
         boolean result = false;
         Iterator<VehicleRoute> routeIterator = solution.getRoutes().iterator();
         Set<Integer> routeCustomers = new HashSet<>();

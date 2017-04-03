@@ -9,7 +9,7 @@ import static vhr.utils.StringUtil.appendStringLine;
 /**
  * Created by quachv on 3/22/2017.
  */
-public class VehicleRoute {
+public class VehicleRoute implements Cloneable{
     protected int id;
     protected final VRPInstance vrpInstance;
     protected Set<Integer> customerIds;
@@ -45,9 +45,8 @@ public class VehicleRoute {
 
     public double getTotalDemand() {
         double result = 0;
-        for (Integer customerId :
-                customerIds.keySet()) {
-            Customer customer = customerIds.get(customerId);
+        for (Integer customerId : customerIds) {
+            Customer customer = vrpInstance.getCustomer(customerId);
             result += customer.getDemand();
         }
         return result;
@@ -55,13 +54,13 @@ public class VehicleRoute {
 
     public double getRouteCost(ICostCalculator costCalulator) {
         double result = 0;
-        Customer from = depot;
+        Customer from = vrpInstance.getDepot();
         for (int i = 0; i < route.size() - 1; i++) {
-            Customer to = customerIds.get(route.get(i));
+            Customer to = vrpInstance.getCustomer(route.get(i));
             result += costCalulator.calculate(from, to);
             from = to;
         }
-        result += costCalulator.calculate(from, depot);
+        result += costCalulator.calculate(from, vrpInstance.getDepot());
         return result;
     }
 
@@ -79,7 +78,7 @@ public class VehicleRoute {
             return result;
         }
         for (int i = 0; i < route.size() - 1; i++) {
-            if(!customerIds.containsKey(route.get(i))) {
+            if(!customerIds.contains(route.get(i))) {
                 return result;
             }
         }
@@ -90,11 +89,17 @@ public class VehicleRoute {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         appendStringLine(sb, "Route " + id + " total demand: " + getTotalDemand());
-        sb.append(depot.getId());
+        sb.append(vrpInstance.getDepot().getId());
         route.forEach((Integer id) -> sb.append(" -> " + id.toString()));
-        sb.append(" -> " + depot.getId());
+        sb.append(" -> " + vrpInstance.getDepot().getId());
         return sb.toString();
     }
 
-
+    public VehicleRoute clone() throws CloneNotSupportedException {
+        VehicleRoute newVehicleRoute = new VehicleRoute(id, vrpInstance);
+        LinkedList<Integer> newRoute = new LinkedList<>(route);
+        customerIds.forEach(id -> newVehicleRoute.addCustomer(id));
+        newVehicleRoute.setRoute(newRoute);
+        return newVehicleRoute;
+    }
 }
