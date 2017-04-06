@@ -1,5 +1,8 @@
 package vhr.RuinAndRecreateAlgorithm;
 
+import vhr.RuinAndRecreateAlgorithm.InitializeSolution.IGenerateInitialSolutionStrategy;
+import vhr.RuinAndRecreateAlgorithm.Recreate.IRecreateStrategy;
+import vhr.RuinAndRecreateAlgorithm.Ruin.IRuinStrategy;
 import vhr.core.*;
 
 import java.util.Collection;
@@ -11,8 +14,14 @@ import java.util.HashSet;
 public class RuinAndRecreateAlgorithm implements VRPAlgorithm {
 
     protected ICostCalculator costCalulator;
-    public RuinAndRecreateAlgorithm(ICostCalculator iCostCalculator) {
-        this.costCalulator = iCostCalculator;
+    protected IDistanceCalculator distanceCalculator;
+    protected IGenerateInitialSolutionStrategy generateInitialSolutionStrategy;
+    protected IRuinStrategy ruinStrategy;
+    protected IRecreateStrategy recreateStrategy;
+    protected int maxRun;
+
+    public RuinAndRecreateAlgorithm() {
+
     }
 
     @Override
@@ -37,9 +46,27 @@ public class RuinAndRecreateAlgorithm implements VRPAlgorithm {
 //            checkIfNeedToRunMoreSearch(vrpSolutionK, vrpSolutionK_p1, runCounter);
 //        }
 
+
 //        return vrpSolutionK;
         return null;
     }
 
+    public static class Builder {
+        private RuinAndRecreateAlgorithm result;
+        protected ICostCalculator costCalulator;
+        protected IDistanceCalculator distanceCalculator;
+        protected IGenerateInitialSolutionStrategy generateInitialSolutionStrategy;
+        protected IRuinStrategy ruinStrategy;
+        protected IRecreateStrategy recreateStrategy;
+        private int maxRun;
+
+        public Builder() {
+
+        }
+
+        public RuinAndRecreateAlgorithm build() {
+
+        }
+    }
 
 }

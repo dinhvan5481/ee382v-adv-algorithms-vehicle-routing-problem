@@ -16,29 +16,24 @@ public class GreedyInsertionStrategy extends AbstractRecerateStrategy {
 
     @Override
     protected void recreateRuinedSolution(VRPSolution ruinedSolution, List<Integer> removedCustomerIds) {
-        // TODO: change route as outer loop instead of customers
         Collection<VehicleRoute> routes = ruinedSolution.getRoutes();
         HashMap<Integer, InsertPositionAndCost> insertPositionDict = new HashMap<>(removedCustomerIds.size());
-//        for(int removedCustomerIdsIndex = 0; removedCustomerIdsIndex < removedCustomerIds.size(); removedCustomerIdsIndex++) {
-//            int customerId = removedCustomerIds.get(removedCustomerIdsIndex);
-//            Customer customer = vrpInstance.getCustomer(customerId);
-//            InsertPositionAndCost insertPosition = findPositionOfMinimumCostWhenInsert(customer, routes);
-//            insertPositionDict.put(customerId, insertPosition);
-//        }
+        List<Integer> unassignedCustomer = new ArrayList<>();
 
-        for (VehicleRoute route: routes) {
-            List<Integer> unassignedCustomer = removedCustomerIds.stream().filter(c -> {
-               Customer customer = vrpInstance.getCustomer(c);
-               return !findBestCustomerAndAddedToRoute(route, customer);
-            }).collect(Collectors.toList());
+        for (Integer customerId :
+                removedCustomerIds) {
+            Customer customer = vrpInstance.getCustomer(customerId);
+            InsertPositionAndCost bestInsertPosition = findPositionOfMinimumCostWhenInsert(customer, routes);
+            if(bestInsertPosition != null) {
+                VehicleRoute route = ruinedSolution.getRoute(bestInsertPosition.getRouteId());
+                route.addCustomer(customerId);
+                route.getRoute().add(bestInsertPosition.getPosition(), customerId);
+            } else  {
+                unassignedCustomer.add(customerId);
+            }
         }
 
-        // TODO: process customer cannot find best route, perhaps need create new route?
         if(insertPositionDict.containsValue(null)) {
-            List<Integer> unassignedCustomer = insertPositionDict.entrySet().stream()
-                    .filter(p -> p.getValue() == null)
-                    .map(p -> p.getKey())
-                    .collect(Collectors.toList());
             VehicleRoute newRoute = ruinedSolution.createNewRoute();
             for(int i = 0; i < unassignedCustomer.size(); i++) {
                 int customerId = unassignedCustomer.get(i);
@@ -50,20 +45,9 @@ public class GreedyInsertionStrategy extends AbstractRecerateStrategy {
         }
     }
 
-    private boolean findBestCustomerAndAddedToRoute(VehicleRoute route, Customer customer) {
-        if(route.getTotalDemand() + customer.getDemand() > vrpInstance.getCapacity()) {
-            return false;
-        }
-        // TODO: working on find best position for the customer
-        LinkedList<Integer> originalPath = new LinkedList<>(route.getRoute());
-
-        return true;
-    }
-
     private InsertPositionAndCost findPositionOfMinimumCostWhenInsert(Customer customer, Collection<VehicleRoute> routes) {
         InsertPositionAndCost bestInsertPosition = null;
         Iterator<VehicleRoute> routeIterator = routes.iterator();
-        //TODO: parallism this func
         while (routeIterator.hasNext()) {
             VehicleRoute route = routeIterator.next();
             if(route.getTotalDemand() + customer.getDemand() > vrpInstance.getCapacity()) {
