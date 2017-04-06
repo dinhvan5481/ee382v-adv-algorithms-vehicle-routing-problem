@@ -7,6 +7,7 @@ import vhr.core.VRPSolution;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by dinhvan5481 on 4/2/17.
@@ -24,7 +25,7 @@ public abstract class AbstractRecreateStrategy implements IRecreateStrategy {
     }
 
     @Override
-    public VRPSolution recreate(VRPSolution ruinedSolution, List<Integer> removedCustomerIds) {
+    public VRPSolution recreate(VRPSolution ruinedSolution, Set<Integer> removedCustomerIds) {
         VRPSolution copiedRuinedSolution = null;
         try {
             copiedRuinedSolution = ruinedSolution.clone();

@@ -32,14 +32,21 @@ public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
             }
         }
 
-        if(insertPositionDict.containsValue(null)) {
+        if(unassignedCustomer.size() > 0) {
             VehicleRoute newRoute = ruinedSolution.createNewRoute();
+            LinkedList<Integer> path = new LinkedList<>();
             for(int i = 0; i < unassignedCustomer.size(); i++) {
                 int customerId = unassignedCustomer.get(i);
                 if(newRoute.getTotalDemand() + vrpInstance.getCustomer(customerId).getDemand() > vrpInstance.getCapacity() ) {
+                    newRoute.setRoute(path);
+                    path = new LinkedList<>();
                     newRoute = ruinedSolution.createNewRoute();
                 }
+                path.push(customerId);
                 newRoute.addCustomer(customerId);
+            }
+            if(path.size() > 0) {
+                newRoute.setRoute(path);
             }
         }
     }

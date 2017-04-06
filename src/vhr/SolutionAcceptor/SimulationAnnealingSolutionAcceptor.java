@@ -26,6 +26,10 @@ public class SimulationAnnealingSolutionAcceptor implements ISolutionAcceptor {
     @Override
     public boolean acceptSolution(double prevCost, double newCost) {
         double costDelta = newCost - prevCost;
+        if(costDelta < 0) {
+            return true;
+        }
+
         if(Math.exp(-costDelta / currentTemp) >= 0.5) {
             return true;
         } else {

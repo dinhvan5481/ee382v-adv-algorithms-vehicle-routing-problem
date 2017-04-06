@@ -99,7 +99,7 @@ public class VRPInstance {
                 return false;
             }
         }
-        if((routeCustomers.size() + 1) != customers.size()) {
+        if(routeCustomers.size() != customers.size()) {
             return result;
         }
         routeCustomers.removeAll(customers.keySet());

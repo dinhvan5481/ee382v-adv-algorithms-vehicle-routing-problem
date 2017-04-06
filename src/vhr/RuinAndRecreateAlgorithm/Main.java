@@ -42,8 +42,13 @@ public class Main {
                 .setMaxRun(maxRun)
                 .setLogSolution(logCostFileName)
                 .build();
-        VRPSolution result = ruinAndRecreateAlg.solve(cvrpInstance);
-        result.toCSV(routeSolutionFileName);
+        VRPSolution result = null;
+        try {
+            result = ruinAndRecreateAlg.solve(cvrpInstance);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
         result.toCSV(routeSolutionFileName);
     }
 }

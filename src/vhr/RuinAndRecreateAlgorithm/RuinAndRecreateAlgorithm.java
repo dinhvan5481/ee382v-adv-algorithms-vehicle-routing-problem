@@ -9,6 +9,8 @@ import vhr.core.*;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import static vhr.utils.StringUtil.appendStringLine;
+
 /**
  * Created by dinhvan5481 on 3/26/17.
  */
@@ -36,41 +38,38 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
     }
 
     @Override
-    public VRPSolution solve(VRPInstance vrpInstance) {
+    public VRPSolution solve(VRPInstance vrpInstance) throws Exception {
         double ruinRate = 0.3;
         int numberOfNodesWillBeRuined = 0;
         int runCounter = 0;
         boolean continueSearchSolutionFlag = true;
-//        VRPSolution vrpSolutionK = generateInitialSolution(vrpInstance);
-//        VRPSolution vrpSolutionK_p1 = null;
-//        RuinStragegy ruinStragegy = null;
-//        HashSet<Customer> unServerdCustomers = new HashSet<>();
-//
-//        // TODO: need to change for loop to while loop which checks on running flag
-//        while (continueSearchSolutionFlag) {
-//            ruinStragegy = chooseRuinStragegy();
-//            ruinRate = selectRuinRate();
-//            vrpSolutionK_p1 = ruinStragegy(vrpInstance, vrpSolutionK, ruinRate);
-//            recreate(vrpSolutionK_p1, unServerdCustomers);
-//            vrpSolutionK = decideWhatSolutionWillBeUsedForNextLoop(vrpSolutionK, vrpSolutionK_p1);
-//            runCounter++;
-//            checkIfNeedToRunMoreSearch(vrpSolutionK, vrpSolutionK_p1, runCounter);
-//        }
-
-
-//        return vrpSolutionK;
 
         VRPSolution vrpSolutionK = generateInitialSolutionStrategy.generateSolution(vrpInstance);
         VRPSolution vrpSolutionK_p1 = null;
+        VRPSolution bestSolution = null;
         if(logger != null) {
             logger.addSolutionCost(vrpSolutionK.getSolutionCost());
         }
         while (continueSearchSolutionFlag) {
             vrpSolutionK_p1 = ruinStrategy.ruin(vrpInstance, vrpSolutionK, ruinRate);
-            recreateStrategy.recreate(vrpSolutionK_p1, ruinStrategy.getRemovedCustomerIds());
+            vrpSolutionK_p1 = recreateStrategy.recreate(vrpSolutionK_p1, ruinStrategy.getRemovedCustomerIds());
+            if(!vrpSolutionK_p1.isSolutionValid()) {
+                StringBuilder sb = new StringBuilder();
+                appendStringLine(sb, "Recreate solution is invalid: run counter: " + runCounter);
+                appendStringLine(sb, vrpSolutionK_p1.toString());
+                throw new Exception(sb.toString());
+            }
             if(solutionAcceptor.acceptSolution(vrpSolutionK.getSolutionCost(), vrpSolutionK_p1.getSolutionCost())) {
                 vrpSolutionK = vrpSolutionK_p1;
             }
+            if(vrpSolutionK.compareTo(bestSolution) < 0 || vrpSolutionK_p1.compareTo(bestSolution) < 0) {
+                if(vrpSolutionK.compareTo(vrpSolutionK_p1) < 0) {
+                    bestSolution = vrpSolutionK;
+                } else {
+                    bestSolution = vrpSolutionK_p1;
+                }
+            }
+
             solutionAcceptor.updateAcceptor();
             runCounter++;
             continueSearchSolutionFlag = continueToSearch(runCounter, solutionAcceptor.canTerminateSearching());
@@ -81,7 +80,7 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
         if(logger != null) {
             logger.toCSV(logFileName);
         }
-        return vrpSolutionK;
+        return bestSolution;
     }
 
     private boolean continueToSearch(int runCounter, boolean canStopSearching) {
@@ -105,7 +104,8 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
             if(logIndex >= costLog.length) {
                 return;
             }
-            costLog[logIndex] = cost;
+            costLog[logIndex++] = cost;
+
         }
 
         public void toCSV(String fileName) {
@@ -113,7 +113,7 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
             int runIndex = 0;
             try {
                 fileWriter = new FileWriter(fileName);
-                while (costLog[runIndex] > 0) {
+                while (runIndex < costLog.length && costLog[runIndex] > 0) {
                     fileWriter.write(String.valueOf(costLog[runIndex]) + System.getProperty("line.separator"));
                     runIndex++;
                 }

@@ -107,6 +107,9 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         int better = -1;
         int equal = 0;
         int worse = 1;
+        if(o == null) {
+            return better;
+        }
 
         if(!o.isSolutionValid() && !this.isSolutionValid()) {
             return equal;

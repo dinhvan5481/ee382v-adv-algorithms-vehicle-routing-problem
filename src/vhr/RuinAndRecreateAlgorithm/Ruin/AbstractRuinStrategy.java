@@ -1,20 +1,20 @@
 package vhr.RuinAndRecreateAlgorithm.Ruin;
 
-import vhr.core.Customer;
 import vhr.core.VRPInstance;
 import vhr.core.VRPSolution;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by quachv on 3/29/2017.
  */
 public abstract class AbstractRuinStrategy implements IRuinStrategy {
-    protected List<Integer> removedCustomerIds;
+    protected Set<Integer> removedCustomerIds;
 
     protected AbstractRuinStrategy() {
-        removedCustomerIds = new ArrayList<>();
+        removedCustomerIds = new HashSet<>();
     }
 
     @Override
@@ -32,7 +32,7 @@ public abstract class AbstractRuinStrategy implements IRuinStrategy {
     }
 
     @Override
-    public List<Integer> getRemovedCustomerIds() {
+    public Set<Integer> getRemovedCustomerIds() {
         return removedCustomerIds;
     }
 
