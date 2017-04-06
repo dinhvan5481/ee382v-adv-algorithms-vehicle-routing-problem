@@ -72,6 +72,10 @@ public class VRPInstance {
         return customers.values();
     }
 
+    public Set<Integer> getCustomerIds() {
+        return customers.keySet();
+    }
+
     public void setDepot(Customer depot) {
         this.depot = depot;
         if(customers.containsKey(depot.getId())) {

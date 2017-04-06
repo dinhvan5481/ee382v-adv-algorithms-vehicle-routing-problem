@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 /**
  * Created by quachv on 3/27/2017.
  */
-public class GenerateClusteringnIntialSolutionStrategy implements IGenerateInitialSolutionStrategy {
+public class GenerateClusteringInitialSolutionStrategy implements IGenerateInitialSolutionStrategy {
 
     private IDistanceCalculator distanceCalulator;
     private ICostCalculator costCalculator;
-    public GenerateClusteringnIntialSolutionStrategy(IDistanceCalculator distanceCalulator, ICostCalculator costCalculator) {
+    protected GenerateClusteringInitialSolutionStrategy(ICostCalculator costCalculator, IDistanceCalculator distanceCalulator) {
         this.distanceCalulator = distanceCalulator;
         this.costCalculator = costCalculator;
     }
@@ -62,7 +62,6 @@ public class GenerateClusteringnIntialSolutionStrategy implements IGenerateIniti
                 totalDemand += customer.getDemand();
             } else {
                 vehicleRoute.setRoute(route);
-                vrpSolution.addRoute(vehicleRoute);
                 route = new LinkedList<>();
                 vehicleRoute = vrpSolution.createNewRoute();
                 totalDemand = customer.getDemand();
@@ -77,7 +76,6 @@ public class GenerateClusteringnIntialSolutionStrategy implements IGenerateIniti
                 totalDemand += customer.getDemand();
             } else {
                 vehicleRoute.setRoute(route);
-                vrpSolution.addRoute(vehicleRoute);
                 route = new LinkedList<>();
                 vehicleRoute = vrpSolution.createNewRoute();
                 totalDemand = customer.getDemand();
@@ -85,8 +83,9 @@ public class GenerateClusteringnIntialSolutionStrategy implements IGenerateIniti
             route.push(customer.getId());
             vehicleRoute.addCustomer(customer.getId());
         }
-
-
+        if(route.size() > 0) {
+            vehicleRoute.setRoute(route);
+        }
         return vrpSolution;
     }
 
@@ -119,6 +118,20 @@ public class GenerateClusteringnIntialSolutionStrategy implements IGenerateIniti
 
         public int getId() {
             return id;
+        }
+    }
+
+    public static class Builder {
+
+        private ICostCalculator costCalculator;
+        private IDistanceCalculator distanceCalculator;
+
+        public Builder(ICostCalculator costCalculator, IDistanceCalculator distanceCalculator) {
+            this.costCalculator = costCalculator;
+            this.distanceCalculator = distanceCalculator;
+        }
+        public IGenerateInitialSolutionStrategy build() {
+            return new GenerateClusteringInitialSolutionStrategy(costCalculator, distanceCalculator);
         }
     }
 }

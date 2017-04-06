@@ -10,6 +10,7 @@ import javafx.util.Builder;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static vhr.utils.StringUtil.appendStringLine;
 
@@ -34,6 +35,13 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
 
     public VehicleRoute getRoute(int routeId) {
         return routes.get(routeId);
+    }
+
+    public void cleanEmptyRoute() {
+        List<Integer> emptyRoute = routes.keySet().stream()
+                .filter(id -> routes.get(id).customerIds.size() == 0)
+                .collect(Collectors.toList());
+        emptyRoute.forEach(id -> routes.remove(id));
     }
 
     public VehicleRoute createNewRoute() {

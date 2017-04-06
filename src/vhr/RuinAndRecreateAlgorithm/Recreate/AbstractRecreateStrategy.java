@@ -11,13 +11,13 @@ import java.util.List;
 /**
  * Created by dinhvan5481 on 4/2/17.
  */
-public abstract class AbstractRecerateStrategy implements IRecreateStrategy {
+public abstract class AbstractRecreateStrategy implements IRecreateStrategy {
 
     protected VRPInstance vrpInstance;
     protected ICostCalculator costCalculator;
     protected IDistanceCalculator distanceCalulator;
 
-    protected AbstractRecerateStrategy(VRPInstance vrpInstance, ICostCalculator costCalculator, IDistanceCalculator distanceCalulator) {
+    protected AbstractRecreateStrategy(VRPInstance vrpInstance, ICostCalculator costCalculator, IDistanceCalculator distanceCalulator) {
         this.vrpInstance = vrpInstance;
         this.costCalculator = costCalculator;
         this.distanceCalulator = distanceCalulator;
@@ -32,8 +32,8 @@ public abstract class AbstractRecerateStrategy implements IRecreateStrategy {
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
-        List<Integer> copiedUnservedCustomer = new ArrayList<>(removedCustomerIds);
-        recreateRuinedSolution(copiedRuinedSolution, copiedUnservedCustomer);
+        List<Integer> copiedRemovedCustomers = new ArrayList<>(removedCustomerIds);
+        recreateRuinedSolution(copiedRuinedSolution, copiedRemovedCustomers);
         return copiedRuinedSolution;
     }
 

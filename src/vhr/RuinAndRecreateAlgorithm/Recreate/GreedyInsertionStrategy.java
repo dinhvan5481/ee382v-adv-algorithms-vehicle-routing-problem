@@ -3,12 +3,11 @@ package vhr.RuinAndRecreateAlgorithm.Recreate;
 import vhr.core.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by quachv on 4/3/2017.
  */
-public class GreedyInsertionStrategy extends AbstractRecerateStrategy {
+public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
 
     public GreedyInsertionStrategy(VRPInstance vrpInstance, ICostCalculator costCalculator, IDistanceCalculator distanceCalulator) {
         super(vrpInstance, costCalculator, distanceCalulator);
@@ -110,6 +109,22 @@ public class GreedyInsertionStrategy extends AbstractRecerateStrategy {
 
         public void setCost(double cost) {
             this.cost = cost;
+        }
+    }
+
+    public static class Builder {
+        private final VRPInstance vrpInstance;
+        private ICostCalculator costCalculator;
+        private IDistanceCalculator distanceCalculator;
+
+        public Builder(VRPInstance vrpInstance, ICostCalculator costCalculator, IDistanceCalculator distanceCalculator) {
+            this.vrpInstance = vrpInstance;
+            this.costCalculator = costCalculator;
+            this.distanceCalculator = distanceCalculator;
+        }
+
+        public IRecreateStrategy build() {
+            return new GreedyInsertionStrategy(vrpInstance, costCalculator, distanceCalculator);
         }
     }
 }

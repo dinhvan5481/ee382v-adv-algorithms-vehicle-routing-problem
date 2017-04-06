@@ -20,7 +20,15 @@ public abstract class AbstractRuinStrategy implements IRuinStrategy {
     @Override
     public VRPSolution ruin(VRPInstance vrpInstance, VRPSolution vrpSolution, double ruinRate) {
         removedCustomerIds.clear();
-        return ruinSolution(vrpInstance, vrpSolution, ruinRate);
+        VRPSolution ruinedSolution = null;
+        try {
+            ruinedSolution = vrpSolution.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        ruinSolution(vrpInstance, ruinedSolution, ruinRate);
+        ruinedSolution.cleanEmptyRoute();
+        return ruinedSolution;
     }
 
     @Override
@@ -28,5 +36,6 @@ public abstract class AbstractRuinStrategy implements IRuinStrategy {
         return removedCustomerIds;
     }
 
-    protected abstract VRPSolution ruinSolution(VRPInstance vrpInstance, VRPSolution vrpSolution, double ruinRate);
+    protected abstract void ruinSolution(VRPInstance vrpInstance, VRPSolution vrpSolution, double ruinRate);
+
 }
