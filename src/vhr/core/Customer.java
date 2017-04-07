@@ -51,19 +51,16 @@ public class Customer {
         return sb.toString();
     }
 
-    public DeliveryPath getPathIn() {
-        return pathIn.get();
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null || !(obj instanceof Customer)) {
+            return false;
+        }
+        return coordinate == ((Customer) obj).coordinate;
     }
 
-    public void setPathIn(DeliveryPath pathIn) {
-        this.pathIn = new WeakReference<DeliveryPath>(pathIn);
-    }
-
-    public DeliveryPath getPathOut() {
-        return pathOut.get();
-    }
-
-    public void setPathOut(DeliveryPath pathOut) {
-        this.pathOut = new WeakReference<DeliveryPath>(pathOut);
+    @Override
+    public int hashCode() {
+        return coordinate.hashCode();
     }
 }

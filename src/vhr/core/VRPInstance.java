@@ -5,6 +5,8 @@ import java.util.*;
 
 import static vhr.utils.StringUtil.appendStringLine;
 import java.io.FileWriter;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Created by quachv on 3/15/2017.
  */
@@ -16,8 +18,15 @@ public class VRPInstance {
     private HashMap<Integer, Customer> customers;
     private Customer depot;
 
+    private ConcurrentHashMap<DeliveryPath, Double> costMatrix;
+    private ConcurrentHashMap<DeliveryPath, Double> distanceMatrix;
+    private ICostCalculator costCalculator;
+    private IDistanceCalculator distanceCalculator;
+
     public VRPInstance() {
         this.customers = new HashMap<>();
+        costMatrix = new ConcurrentHashMap<>();
+        distanceMatrix = new ConcurrentHashMap<>();
     }
 
 
@@ -107,6 +116,22 @@ public class VRPInstance {
             return result;
         }
         return true;
+    }
+
+    public double getCost(Customer from, Customer to) {
+        DeliveryPath path = new DeliveryPath(from, to);
+        if(!costMatrix.containsKey(path)) {
+            costMatrix.put(path, costCalculator.calculate(path));
+        }
+        return costMatrix.get(path);
+    }
+
+    public double getDistance(Customer from, Customer to) {
+        DeliveryPath path = new DeliveryPath(from, to);
+        if(!distanceMatrix.containsKey(path)) {
+            distanceMatrix.put(path, distanceCalculator.calculate(from.getCoordinate(), to.getCoordinate()));
+        }
+        return distanceMatrix.get(path);
     }
 
     @Override
