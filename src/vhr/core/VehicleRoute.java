@@ -14,12 +14,14 @@ public class VehicleRoute implements Cloneable{
     protected final VRPInstance vrpInstance;
     protected Set<Integer> customerIds;
     protected LinkedList<Integer> route;
+    protected boolean routeValid;
 
     public VehicleRoute(int id, final VRPInstance vrpInstance) {
         this.id = id;
         this.vrpInstance = vrpInstance;
         route = new LinkedList<>();
         customerIds = new HashSet<>();
+        routeValid = true;
     }
 
     public int getId() {
@@ -28,11 +30,13 @@ public class VehicleRoute implements Cloneable{
 
     public void addCustomer(int customerId) {
         customerIds.add(customerId);
+        routeValid = true;
     }
 
     public void removeCustomer(int customerId) {
         customerIds.remove(customerId);
         route.remove(new Integer(customerId));
+        routeValid = false;
     }
 
     public Set<Integer> getCustomerKeys() {
@@ -53,28 +57,47 @@ public class VehicleRoute implements Cloneable{
     }
 
     public double getRouteCost(ICostCalculator costCalulator) {
-        return costCalulator.calculateRouteCost(route);
+        return costCalulator.calculateRouteCost(route, vrpInstance);
     }
 
-    public void setRoute(LinkedList<Integer> route) {
-        this.route = route;
+    public void setRoute(LinkedList<Integer> path) {
+        if(path.stream().filter(customerId -> !customerIds.contains(customerId)).count() > 0
+                || customerIds.stream().filter(customerId -> !path.contains(customerId)).count() > 0) {
+            return;
+        }
+        this.route = path;
+        routeValid = true;
+    }
+
+    public boolean isRouteValid() {
+        return routeValid;
     }
 
     public LinkedList<Integer> getRoute() {
         return this.route;
     }
 
-    public boolean isRouteValid() {
-        boolean result = false;
-        if(customerIds.size() != route.size()) {
-            return result;
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null || !(obj instanceof VehicleRoute)) {
+            return false;
         }
-        for (int i = 0; i < route.size() - 1; i++) {
-            if(!customerIds.contains(route.get(i))) {
-                return result;
-            }
+
+        if(customerIds.size() != ((VehicleRoute) obj).customerIds.size()) {
+            return false;
         }
+
+        if(customerIds.stream().filter(customerId -> !((VehicleRoute) obj).customerIds.contains(customerId)).count() > 0
+                || ((VehicleRoute) obj).customerIds.stream().filter(customerId -> customerIds.contains(customerId)).count() > 0) {
+            return false;
+        }
+
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return customerIds.hashCode();
     }
 
     @Override

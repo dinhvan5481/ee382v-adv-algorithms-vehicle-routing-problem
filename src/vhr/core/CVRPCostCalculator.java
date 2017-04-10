@@ -7,11 +7,9 @@ import java.util.LinkedList;
  */
 public class CVRPCostCalculator implements ICostCalculator {
 
-    protected IDistanceCalculator distanceCalulator;
-    protected VRPInstance vrpInstance;
-    public CVRPCostCalculator(VRPInstance vrpInstance, IDistanceCalculator distanceCalculator) {
-        this.vrpInstance = vrpInstance;
-        this.distanceCalulator = distanceCalculator;
+    protected IDistanceCalculator distanceCalculator;
+    public CVRPCostCalculator(IDistanceCalculator distanceCalculator) {
+        this.distanceCalculator = distanceCalculator;
     }
 
     @Override
@@ -21,11 +19,11 @@ public class CVRPCostCalculator implements ICostCalculator {
 
     @Override
     public double calculate(Customer from, Customer to) {
-        return distanceCalulator.calculate(from.getCoordinate(), to.getCoordinate());
+        return distanceCalculator.calculate(from.getCoordinate(), to.getCoordinate());
     }
 
     @Override
-    public double calculateRouteCost(LinkedList<Integer> routeWithoutDepot) {
+    public double calculateRouteCost(LinkedList<Integer> routeWithoutDepot, VRPInstance vrpInstance) {
         double result = 0;
         Customer from = vrpInstance.getDepot();
         for (int i = 0; i < routeWithoutDepot.size() - 1; i++) {

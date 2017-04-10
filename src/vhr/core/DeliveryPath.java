@@ -10,8 +10,6 @@ public class DeliveryPath {
     public DeliveryPath(Customer from, Customer to) {
         this.from = from;
         this.to = to;
-        from.setPathOut(this);
-        to.setPathOut(this);
     }
 
     public double cost(ICostCalculator calulator) {
@@ -24,5 +22,19 @@ public class DeliveryPath {
 
     public Customer getTo() {
         return to;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null || !(obj instanceof DeliveryPath)) {
+            return false;
+        }
+        return (getFrom() == ((DeliveryPath) obj).getFrom() && getTo() == ((DeliveryPath) obj).getTo())
+                || (getFrom() == ((DeliveryPath) obj).getTo() && getTo() == ((DeliveryPath) obj).getFrom());
+    }
+
+    @Override
+    public int hashCode() {
+        return getFrom().hashCode() + getTo().hashCode();
     }
 }

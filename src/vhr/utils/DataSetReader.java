@@ -1,5 +1,6 @@
 package vhr.utils;
 
+import vhr.core.IDataExtract;
 import vhr.core.VRPInstance;
 import vhr.core.Coordinate2D;
 import vhr.core.Customer;
@@ -13,9 +14,12 @@ import java.util.Arrays;
 /**
  * Created by quachv on 3/15/2017.
  */
-public class DataSetReader {
+public class DataSetReader implements IDataExtract {
+    public DataSetReader() {
 
-    public static VRPInstance extractData(String fileName) {
+    }
+
+    public VRPInstance extractDataFrom(String fileName) {
         VRPInstance result = new VRPInstance();
         boolean isInCoordSection, isInDemandSection, isInDepotSection, isInSpecificationSection;
         try {

@@ -4,42 +4,44 @@ import vhr.core.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.concurrent.ThreadLocalRandom;
+
+import static java.util.Collections.max;
+import static java.util.Collections.min;
 
 /**
  * Created by quachv on 3/27/2017.
  */
 public class GenerateClusteringInitialSolutionStrategy implements IGenerateInitialSolutionStrategy {
 
-    private IDistanceCalculator distanceCalulator;
-    private ICostCalculator costCalculator;
-    protected GenerateClusteringInitialSolutionStrategy(ICostCalculator costCalculator, IDistanceCalculator distanceCalulator) {
-        this.distanceCalulator = distanceCalulator;
-        this.costCalculator = costCalculator;
+    protected long randomSeed;
+    protected GenerateClusteringInitialSolutionStrategy(long randomSeed) {
+        this.randomSeed = randomSeed;
     }
+
 
     @Override
     public VRPSolution generateSolution(VRPInstance vrpInstance) {
         Customer depot = vrpInstance.getDepot();
-        Customer closestDepotCustomer = null;
-        Collection<Customer> customerCollection = vrpInstance.getCustomers();
-        Iterator<Customer> customerIterator = customerCollection.iterator();
+        Customer baseCustomer;
         List<Node> customerNodes = new ArrayList<>();
 
-        double closetDistance = Double.MAX_VALUE;
-        while (customerIterator.hasNext()) {
-            Customer customer = customerIterator.next();
+        int minCustomerId = min(vrpInstance.getCustomerIds());
+        int maxCustomerId = max(vrpInstance.getCustomerIds());
+        int baseCustomerId = ThreadLocalRandom.current().nextInt(minCustomerId, maxCustomerId + 1);
+        baseCustomer = vrpInstance.getCustomer(baseCustomerId);
+        vrpInstance.getCustomers().forEach((Customer customer) -> {
             Node customerNode = new Node(customer.getId(),
-                    ((AbstractCoordinate) depot.getCoordinate()).substract((AbstractCoordinate)customer.getCoordinate()));
-            customerNode.setDistance(distanceCalulator.calculate(depot.getCoordinate(), customer.getCoordinate()));
-            if(customerNode.getDistance() < closetDistance) {
-                closetDistance = customerNode.getDistance();
-                closestDepotCustomer = customer;
-            }
+                    ((AbstractCoordinate) depot.getCoordinate())
+                            .substract((AbstractCoordinate)customer.getCoordinate())
+            );
+            customerNode
+                    .setDistance(vrpInstance.getDistance(depot, customer));
             customerNodes.add(customerNode);
-        }
+        });
 
         AbstractCoordinate baseVector = ((AbstractCoordinate) depot.getCoordinate())
-                .substract((AbstractCoordinate)closestDepotCustomer.getCoordinate());
+                .substract((AbstractCoordinate)baseCustomer.getCoordinate());
 
         customerNodes.forEach((Node node) -> node.thetaFrom(baseVector));
         customerNodes.sort(Comparator.comparingDouble(Node::getTheta));
@@ -51,7 +53,7 @@ public class GenerateClusteringInitialSolutionStrategy implements IGenerateIniti
 
         customerNodesWIthPositiveTheta.sort(Comparator.comparingDouble(Node::getTheta));
 
-        VRPSolution vrpSolution = new VRPSolution(vrpInstance, costCalculator);
+        VRPSolution vrpSolution = new VRPSolution(vrpInstance);
         VehicleRoute vehicleRoute = vrpSolution.createNewRoute();
         LinkedList<Integer> route = new LinkedList<>();
         double totalDemand = 0;
@@ -123,15 +125,14 @@ public class GenerateClusteringInitialSolutionStrategy implements IGenerateIniti
 
     public static class Builder {
 
-        private ICostCalculator costCalculator;
-        private IDistanceCalculator distanceCalculator;
+        private long randomSeed;
 
-        public Builder(ICostCalculator costCalculator, IDistanceCalculator distanceCalculator) {
-            this.costCalculator = costCalculator;
-            this.distanceCalculator = distanceCalculator;
+        public Builder(long randomSeed) {
+            this.randomSeed = randomSeed;
         }
+
         public IGenerateInitialSolutionStrategy build() {
-            return new GenerateClusteringInitialSolutionStrategy(costCalculator, distanceCalculator);
+            return new GenerateClusteringInitialSolutionStrategy(randomSeed);
         }
     }
 }

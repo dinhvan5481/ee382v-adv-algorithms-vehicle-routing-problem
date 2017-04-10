@@ -65,7 +65,7 @@ public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
             double minCost = Double.MAX_VALUE;
             for (int position = 0; position < originalPath.size(); position++) {
                 originalPath.add(position, customer.getId());
-                double cost = costCalculator.calculateRouteCost(originalPath);
+                double cost = vrpInstance.getRouteCost(originalPath);
                 if(cost < minCost) {
                     minCost = cost;
                     bestPosition = position;

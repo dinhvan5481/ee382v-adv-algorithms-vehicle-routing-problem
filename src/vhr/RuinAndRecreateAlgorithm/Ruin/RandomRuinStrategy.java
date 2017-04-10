@@ -5,9 +5,8 @@ import vhr.core.VRPSolution;
 import vhr.core.VehicleRoute;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static java.util.Collections.*;
 import static java.util.Collections.max;
@@ -27,14 +26,12 @@ public class RandomRuinStrategy extends AbstractRuinStrategy {
         int numberOfNodeWillBeRemoved = (int) Math.floor(ruinRate * vrpInstance.getNumberOfCustomers());
         int minCustomerId = min(vrpInstance.getCustomerIds());
         int maxCustomerId = max(vrpInstance.getCustomerIds());
-        Set<Integer> removeCustomerId = new HashSet<>(numberOfNodeWillBeRemoved);
 
         for (int i = 0; i < numberOfNodeWillBeRemoved; i++) {
             int customerId;
             {
-                customerId = random.nextInt(maxCustomerId - minCustomerId + 1)
-                        + min(vrpInstance.getCustomerIds());
-            } while (vrpInstance.getCustomer(customerId) == null && !removeCustomerId.contains(customerId));
+                customerId = ThreadLocalRandom.current().nextInt(minCustomerId, maxCustomerId + 1);
+            } while (vrpInstance.getCustomer(customerId) == null || removedCustomerIds.contains(customerId));
             removedCustomerIds.add(customerId);
         }
         ruinSolution.getRoutes().forEach((VehicleRoute route) -> {

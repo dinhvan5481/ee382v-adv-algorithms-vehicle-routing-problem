@@ -18,17 +18,27 @@ public class Main {
         String fileName = "./data/A-VRP/A-n37-k6.vrp";
         String routeSolutionFileName = "./solutions/A-VRP/A-n37-k6.csv";
         String logCostFileName = "./solutions/A-VRP/A-n37-k6-cost.csv";
-        VRPInstance cvrpInstance = DataSetReader.extractData(fileName);
+        long randomSeed = 0;
+        IDataExtract dataExtract = new DataSetReader();
         IDistanceCalculator distanceCalulator = new Euclid2DDistanceCalculator();
-        ICostCalculator costCalculator = new CVRPCostCalculator(cvrpInstance, distanceCalulator);
-//        GenerateClusteringInitialSolutionStrategy generateInitialSolution = new GenerateClusteringInitialSolutionStrategy(distanceCalulator, costCalculator);
+        ICostCalculator costCalculator = new CVRPCostCalculator(distanceCalulator);
+        VRPInstance cvrpInstance = null;
+        try {
+            cvrpInstance = new VRPInstance.Builder(dataExtract)
+                    .setDataFileName(fileName)
+                    .setCostCalculator(costCalculator)
+                    .setDistanceCalculator(distanceCalulator)
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        GenerateClusteringInitialSolutionStrategy generateInitialSolution = new GenerateClusteringInitialSolutionStrategy(distanceCalculator, costCalculator);
 //        cvrpInstance.toCSV(fileName.replace(".vrp", ".csv"));
 //        VRPSolution vrpSolution = generateInitialSolution.generateSolution(cvrpInstance);
 //        vrpSolution.toCSV(routeSolutionFileName);
         IGenerateInitialSolutionStrategy generateInitialSolutionStrategy =
                 new GenerateClusteringInitialSolutionStrategy
-                        .Builder(costCalculator, distanceCalulator).build();
-        long randomSeed = 0;
+                        .Builder(randomSeed).build();
         IRuinStrategy ruinStrategy = new RandomRuinStrategy.Builder(randomSeed).build();
         IRecreateStrategy recreateStrategy = new GreedyInsertionStrategy.Builder(cvrpInstance, costCalculator, distanceCalulator).build();
         int maxRun = 40000;

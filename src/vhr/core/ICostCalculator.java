@@ -8,5 +8,5 @@ import java.util.LinkedList;
 public interface ICostCalculator {
     double calculate(DeliveryPath path);
     double calculate(Customer from, Customer to);
-    double calculateRouteCost(LinkedList<Integer> routeWithoutDepot);
+    double calculateRouteCost(LinkedList<Integer> routeWithoutDepot, VRPInstance vrpInstance);
 }
