@@ -18,11 +18,9 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
 
     protected final VRPInstance vrpInstance;
     protected HashMap<Integer, VehicleRoute> routes;
-    protected ICostCalculator costCalculator;
 
-    public VRPSolution(VRPInstance vrpInstance, ICostCalculator costCalculator) {
+    public VRPSolution(VRPInstance vrpInstance) {
         routes = new HashMap<>();
-        this.costCalculator = costCalculator;
         this.vrpInstance = vrpInstance;
     }
     public Collection<VehicleRoute> getRoutes() {
@@ -59,7 +57,7 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         Iterator<Integer> routeIterator = routes.keySet().iterator();
         while (routeIterator.hasNext()) {
             VehicleRoute route = routes.get(routeIterator.next());
-            result += route.getRouteCost(costCalculator);
+            result += route.getRouteCost(vrpInstance.getCostCalculator());
         }
         return result;
     }
@@ -73,7 +71,8 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         StringBuilder sb = new StringBuilder();
         appendStringLine(sb, "Total cost : " + getSolutionCost());
         for (Integer routeId: routes.keySet()) {
-            appendStringLine(sb, "Route " + routeId + " total cost: " + routes.get(routeId).getRouteCost(costCalculator));
+            appendStringLine(sb, "Route " + routeId + " total cost: " + routes.get(routeId)
+                    .getRouteCost(vrpInstance.getCostCalculator()));
             appendStringLine(sb, routeId.toString());
         }
         return sb.toString();
@@ -135,7 +134,7 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
     }
 
     public VRPSolution clone() throws CloneNotSupportedException {
-        VRPSolution newVRPSolution = new VRPSolutionBuilder(vrpInstance, costCalculator).build();
+        VRPSolution newVRPSolution = new VRPSolutionBuilder(vrpInstance).build();
         routes.forEach((k, v) -> {
             try {
                 newVRPSolution.addRoute(v.clone());
@@ -149,16 +148,14 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
 
     public static class VRPSolutionBuilder implements Builder<VRPSolution>{
         private final VRPInstance vrpInstance;
-        private final ICostCalculator costCalculator;
 
-        public VRPSolutionBuilder(VRPInstance vrpInstance, ICostCalculator costCalculator) {
+        public VRPSolutionBuilder(VRPInstance vrpInstance) {
             this.vrpInstance = vrpInstance;
-            this.costCalculator = costCalculator;
         }
 
         @Override
         public VRPSolution build() {
-            return new VRPSolution(vrpInstance, costCalculator);
+            return new VRPSolution(vrpInstance);
         }
     }
 

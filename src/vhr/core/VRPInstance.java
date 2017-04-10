@@ -20,6 +20,7 @@ public class VRPInstance {
 
     private ConcurrentHashMap<DeliveryPath, Double> costMatrix;
     private ConcurrentHashMap<DeliveryPath, Double> distanceMatrix;
+    private ConcurrentHashMap<VehicleRoute, Double> vehicleRoutes;
     private ICostCalculator costCalculator;
     private IDistanceCalculator distanceCalculator;
 
@@ -27,6 +28,7 @@ public class VRPInstance {
         this.customers = new HashMap<>();
         costMatrix = new ConcurrentHashMap<>();
         distanceMatrix = new ConcurrentHashMap<>();
+        vehicleRoutes = new ConcurrentHashMap<>();
     }
 
 
@@ -134,6 +136,21 @@ public class VRPInstance {
         return distanceMatrix.get(path);
     }
 
+    public double getRouteCost(LinkedList<Integer> route) {
+        return costCalculator.calculateRouteCost(route, this);
+    }
+
+    public double getRouteCost(VehicleRoute route) {
+        if(!vehicleRoutes.contains(route)) {
+            return vehicleRoutes.put(route, getRouteCost(route.getRoute()));
+        }
+        return vehicleRoutes.get(route);
+    }
+
+    public ICostCalculator getCostCalculator() {
+        return costCalculator;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -170,5 +187,42 @@ public class VRPInstance {
         }
 
 
+    }
+
+    public static class Builder {
+        private IDataExtract dataExtract;
+        private String fileName;
+
+        private ICostCalculator costCalculator;
+        private IDistanceCalculator distanceCalculator;
+
+        public Builder(IDataExtract dataExtract) {
+            this.dataExtract = dataExtract;
+        }
+
+        public Builder setDataFileName(String fileName) {
+            this.fileName = fileName;
+            return this;
+        }
+
+        public Builder setCostCalculator(ICostCalculator costCalculator) {
+            this.costCalculator = costCalculator;
+            return this;
+        }
+
+        public Builder setDistanceCalculator(IDistanceCalculator distanceCalculator) {
+            this.distanceCalculator = distanceCalculator;
+            return this;
+        }
+
+        public VRPInstance build() throws Exception {
+            if(costCalculator == null || distanceCalculator == null || fileName.isEmpty()) {
+                throw new Exception("Cost calculator or distance calculator not setting");
+            }
+            VRPInstance vrpInstance = dataExtract.extractDataFrom(fileName);
+            vrpInstance.costCalculator = costCalculator;
+            vrpInstance.distanceCalculator = distanceCalculator;
+            return vrpInstance;
+        }
     }
 }
