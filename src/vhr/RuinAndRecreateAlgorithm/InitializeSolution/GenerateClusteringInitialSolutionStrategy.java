@@ -85,6 +85,7 @@ public class GenerateClusteringInitialSolutionStrategy implements IGenerateIniti
             route.push(customer.getId());
             vehicleRoute.addCustomer(customer.getId());
         }
+
         if(route.size() > 0) {
             vehicleRoute.setRoute(route);
         }
