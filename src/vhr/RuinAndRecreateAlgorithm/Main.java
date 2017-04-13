@@ -6,9 +6,15 @@ import vhr.RuinAndRecreateAlgorithm.Recreate.GreedyInsertionStrategy;
 import vhr.RuinAndRecreateAlgorithm.Recreate.IRecreateStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.IRuinStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.RandomRuinStrategy;
+import vhr.RuinAndRecreateAlgorithm.Ruin.SequentialRuinStrategy;
 import vhr.SolutionAcceptor.SimulationAnnealingSolutionAcceptor;
 import vhr.core.*;
 import vhr.utils.DataSetReader;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by dinhvan5481 on 3/28/17.
@@ -18,37 +24,39 @@ public class Main {
         String fileName = "./data/A-VRP/A-n37-k6.vrp";
         String routeSolutionFileName = "./solutions/A-VRP/A-n37-k6.csv";
         String logCostFileName = "./solutions/A-VRP/A-n37-k6-cost.csv";
+        String logSearchFileName = "./solutions/A-VRP/A-n37-k6.log";
         long randomSeed = 0;
         IDataExtract dataExtract = new DataSetReader();
-        IDistanceCalculator distanceCalulator = new Euclid2DDistanceCalculator();
-        ICostCalculator costCalculator = new CVRPCostCalculator(distanceCalulator);
+        IDistanceCalculator distanceCalculator = new Euclid2DDistanceCalculator();
+        ICostCalculator costCalculator = new CVRPCostCalculator(distanceCalculator);
         VRPInstance cvrpInstance = null;
         try {
             cvrpInstance = new VRPInstance.Builder(dataExtract)
                     .setDataFileName(fileName)
                     .setCostCalculator(costCalculator)
-                    .setDistanceCalculator(distanceCalulator)
+                    .setDistanceCalculator(distanceCalculator)
+                    .setMaxTruck(6)
                     .build();
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        GenerateClusteringInitialSolutionStrategy generateInitialSolution = new GenerateClusteringInitialSolutionStrategy(distanceCalculator, costCalculator);
-//        cvrpInstance.toCSV(fileName.replace(".vrp", ".csv"));
-//        VRPSolution vrpSolution = generateInitialSolution.generateSolution(cvrpInstance);
-//        vrpSolution.toCSV(routeSolutionFileName);
-        IGenerateInitialSolutionStrategy generateInitialSolutionStrategy =
+        GenerateClusteringInitialSolutionStrategy generateInitialSolution =
+                new GenerateClusteringInitialSolutionStrategy.Builder(randomSeed).build();
+        cvrpInstance.toCSV(fileName.replace(".vrp", ".csv"));
+        GenerateClusteringInitialSolutionStrategy generateInitialSolutionStrategy =
                 new GenerateClusteringInitialSolutionStrategy
                         .Builder(randomSeed).build();
-        IRuinStrategy ruinStrategy = new RandomRuinStrategy.Builder(randomSeed).build();
-        IRecreateStrategy recreateStrategy = new GreedyInsertionStrategy.Builder(cvrpInstance, costCalculator, distanceCalulator).build();
-        int maxRun = 40000;
+        IRuinStrategy randomRuinStrategy = new RandomRuinStrategy.Builder(randomSeed).build();
+        IRuinStrategy sequentialRuinStrategy = new SequentialRuinStrategy.Builder().build();
+        IRecreateStrategy recreateStrategy = new GreedyInsertionStrategy.Builder(cvrpInstance, costCalculator, distanceCalculator).build();
+        int maxRun = 500000;
 
         // TODO: need to work on intial temp
-        IVRPAlgorithm ruinAndRecreateAlg = new RuinAndRecreateAlgorithm.Builder(costCalculator, distanceCalulator)
+        IVRPAlgorithm ruinAndRecreateAlg = new RuinAndRecreateAlgorithm.Builder(costCalculator, distanceCalculator)
                 .setInitializeSolutionStrategy(generateInitialSolutionStrategy)
-                .setRuinStrategy(ruinStrategy)
-                .setRecreateStrategy(recreateStrategy)
-                .setSolutionAcceptor(new SimulationAnnealingSolutionAcceptor())
+                .addRuinStrategies(randomRuinStrategy)
+                .addRuinStrategies(sequentialRuinStrategy)
+                .addRecreateStrategies(recreateStrategy)
                 .setMaxRun(maxRun)
                 .setLogSolution(logCostFileName)
                 .build();
@@ -60,5 +68,17 @@ public class Main {
             e.printStackTrace();
         }
         result.toCSV(routeSolutionFileName);
+        System.out.print(result.toString());
+        FileWriter fileWriter;
+        try {
+            fileWriter = new FileWriter(logSearchFileName);
+            fileWriter.write(result.toString());
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 }

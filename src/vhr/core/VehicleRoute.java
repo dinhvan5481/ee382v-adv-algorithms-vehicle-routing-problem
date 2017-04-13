@@ -56,8 +56,11 @@ public class VehicleRoute implements Cloneable{
         return result;
     }
 
-    public double getRouteCost(ICostCalculator costCalulator) {
-        return costCalulator.calculateRouteCost(route, vrpInstance);
+    public double getRouteCost(ICostCalculator costCalculator) throws Exception {
+        if(!isRouteValid()) {
+            throw new Exception("Route is not valid");
+        }
+        return costCalculator.calculateRouteCost(route, vrpInstance);
     }
 
     public void setRoute(LinkedList<Integer> path) {

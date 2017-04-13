@@ -23,6 +23,7 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         routes = new HashMap<>();
         this.vrpInstance = vrpInstance;
     }
+
     public Collection<VehicleRoute> getRoutes() {
         return routes.values();
     }
@@ -57,7 +58,11 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         Iterator<Integer> routeIterator = routes.keySet().iterator();
         while (routeIterator.hasNext()) {
             VehicleRoute route = routes.get(routeIterator.next());
-            result += route.getRouteCost(vrpInstance.getCostCalculator());
+            try {
+                result += route.getRouteCost(vrpInstance.getCostCalculator());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return result;
     }
@@ -66,13 +71,25 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
         return this.vrpInstance.isValid(this);
     }
 
+    public boolean isNumberOfRoutesValid() {
+        return vrpInstance.getMaxTruck() > 0 && routes.size() <= vrpInstance.getMaxTruck();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        appendStringLine(sb, "Total cost : " + getSolutionCost());
+        try {
+            appendStringLine(sb, "Total cost : " + getSolutionCost());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         for (Integer routeId: routes.keySet()) {
-            appendStringLine(sb, "Route " + routeId + " total cost: " + routes.get(routeId)
-                    .getRouteCost(vrpInstance.getCostCalculator()));
+            try {
+                appendStringLine(sb, "Route " + routeId + " total cost: " + routes.get(routeId)
+                        .getRouteCost(vrpInstance.getCostCalculator()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             appendStringLine(sb, routeId.toString());
         }
         return sb.toString();

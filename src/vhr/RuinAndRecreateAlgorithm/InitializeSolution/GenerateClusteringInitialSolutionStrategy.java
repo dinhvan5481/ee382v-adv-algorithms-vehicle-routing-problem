@@ -15,21 +15,20 @@ import static java.util.Collections.min;
 public class GenerateClusteringInitialSolutionStrategy implements IGenerateInitialSolutionStrategy {
 
     protected long randomSeed;
+    protected Customer baseCustomer;
     protected GenerateClusteringInitialSolutionStrategy(long randomSeed) {
         this.randomSeed = randomSeed;
     }
 
+    public void setBaseCustomer(Customer customer) {
+        baseCustomer = customer;
+    }
 
     @Override
     public VRPSolution generateSolution(VRPInstance vrpInstance) {
         Customer depot = vrpInstance.getDepot();
-        Customer baseCustomer;
         List<Node> customerNodes = new ArrayList<>();
 
-        int minCustomerId = min(vrpInstance.getCustomerIds());
-        int maxCustomerId = max(vrpInstance.getCustomerIds());
-        int baseCustomerId = ThreadLocalRandom.current().nextInt(minCustomerId, maxCustomerId + 1);
-        baseCustomer = vrpInstance.getCustomer(baseCustomerId);
         vrpInstance.getCustomers().forEach((Customer customer) -> {
             Node customerNode = new Node(customer.getId(),
                     ((AbstractCoordinate) depot.getCoordinate())
@@ -132,7 +131,7 @@ public class GenerateClusteringInitialSolutionStrategy implements IGenerateIniti
             this.randomSeed = randomSeed;
         }
 
-        public IGenerateInitialSolutionStrategy build() {
+        public GenerateClusteringInitialSolutionStrategy build() {
             return new GenerateClusteringInitialSolutionStrategy(randomSeed);
         }
     }

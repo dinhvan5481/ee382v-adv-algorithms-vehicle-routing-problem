@@ -1,14 +1,19 @@
 package vhr.RuinAndRecreateAlgorithm;
 
+import vhr.RuinAndRecreateAlgorithm.InitializeSolution.GenerateClusteringInitialSolutionStrategy;
 import vhr.RuinAndRecreateAlgorithm.InitializeSolution.IGenerateInitialSolutionStrategy;
 import vhr.RuinAndRecreateAlgorithm.Recreate.IRecreateStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.IRuinStrategy;
+import vhr.RuinAndRecreateAlgorithm.Ruin.LeastCustomerRuinStrategy;
 import vhr.SolutionAcceptor.ISolutionAcceptor;
+import vhr.SolutionAcceptor.SimulationAnnealingSolutionAcceptor;
 import vhr.core.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static vhr.utils.StringUtil.appendStringLine;
 
@@ -17,13 +22,14 @@ import static vhr.utils.StringUtil.appendStringLine;
  */
 public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
 
-    protected ICostCalculator costCalulator;
+    protected int numOfInitSolution;
+    protected List<Double> initSolutionCosts;
+    protected ICostCalculator costCalculator;
     protected IDistanceCalculator distanceCalculator;
-    protected IGenerateInitialSolutionStrategy generateInitialSolutionStrategy;
-    protected IRuinStrategy ruinStrategy;
-    protected IRecreateStrategy recreateStrategy;
+    protected GenerateClusteringInitialSolutionStrategy generateInitialSolutionStrategy;
     protected ISolutionAcceptor solutionAcceptor;
 
+    protected IRuinStrategy leastCustomerRuinStrategy;
     protected ArrayList<IRuinStrategy> ruinStrategies;
     protected ArrayList<IRecreateStrategy> recreateStrategies;
     protected RouletteWheel ruinedRouletteWheel;
@@ -35,87 +41,131 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
 
     protected RuinAndRecreateAlgorithm() {
         maxRun = 0;
+        numOfInitSolution = 100;
         ruinStrategies = new ArrayList<>();
         recreateStrategies = new ArrayList<>();
+        initSolutionCosts = new ArrayList<>();
+        leastCustomerRuinStrategy = new LeastCustomerRuinStrategy();
+        ruinStrategies.add(leastCustomerRuinStrategy);
     }
 
     protected RuinAndRecreateAlgorithm(ICostCalculator costCalculator, IDistanceCalculator distanceCalculator) {
         this();
-        this.costCalulator = costCalculator;
+        this.costCalculator = costCalculator;
         this.distanceCalculator = distanceCalculator;
     }
 
-    public void addRuiStrategy(IRuinStrategy ruinStrategy) {
+    protected void addRuiStrategy(IRuinStrategy ruinStrategy) {
         ruinStrategies.add(ruinStrategy);
     }
 
-    public void addRecreateStrategy(IRecreateStrategy recreateStrategy) {
+    protected void addRecreateStrategy(IRecreateStrategy recreateStrategy) {
         recreateStrategies.add(recreateStrategy);
     }
 
     @Override
     public VRPSolution solve(VRPInstance vrpInstance) throws Exception {
+        List<VRPSolution> initialSolutions = new ArrayList<>();
         double ruinRate = 0.3;
         int runCounter = 0;
         boolean continueSearchSolutionFlag = true;
+        Collections.shuffle(ruinStrategies);
+        Collections.shuffle(recreateStrategies);
 
-        double rouletteWheelParametterSensitive = 0.9;
-        ruinedRouletteWheel = new RouletteWheel(ruinStrategies.size(), rouletteWheelParametterSensitive);
-        recreateRouletteWheel = new RouletteWheel(recreateStrategies.size(), rouletteWheelParametterSensitive);
+        double rouletteWheelParameterSensitive = 0.6;
+        ruinedRouletteWheel = new RouletteWheel(ruinStrategies.size(), rouletteWheelParameterSensitive);
+        recreateRouletteWheel = new RouletteWheel(recreateStrategies.size(), rouletteWheelParameterSensitive);
         RouletteWheel.SolutionType currentSolutionType;
         IRuinStrategy currentRuinStrategy;
         IRecreateStrategy currentRecreateStrategy;
 
-        VRPSolution vrpSolutionK = generateInitialSolutionStrategy.generateSolution(vrpInstance);
+        VRPSolution vrpSolutionK = null;
+        double bestInitSolutionCost = Double.MAX_VALUE;
+        double initSolutionCost = 0;
+        VRPSolution initSolution;
+        double originalTruckCapacity = vrpInstance.getCapacity();
+
+        while (vrpSolutionK == null) {
+            for (Customer customer :
+                    vrpInstance.getCustomers()) {
+                generateInitialSolutionStrategy.setBaseCustomer(customer);
+                initSolution = generateInitialSolutionStrategy.generateSolution(vrpInstance);
+                initSolutionCost = initSolution.getSolutionCost();
+                if(initSolutionCost < bestInitSolutionCost && initSolution.isNumberOfRoutesValid()) {
+                    vrpSolutionK = initSolution;
+                    bestInitSolutionCost = initSolution.getSolutionCost();
+                }
+                if(initSolution.isNumberOfRoutesValid()) {
+                    initSolutionCosts.add(initSolutionCost);
+                    initialSolutions.add(initSolution);
+                }
+            }
+            if(vrpSolutionK == null) {
+                vrpInstance.setCapacity(vrpInstance.getCapacity() * 1.25);
+            }
+        }
+        vrpInstance.setCapacity(originalTruckCapacity);
+        double initCostAverage = initSolutionCosts.stream().mapToDouble(c -> c.doubleValue())
+                .summaryStatistics().getAverage();
+        double standardDeviationOfInitSolutionCost = Math.sqrt(initSolutionCosts.stream()
+                .mapToDouble(c -> Math.pow(c.doubleValue() - initCostAverage, 2.0)).sum() / (initSolutionCosts.size() - 1));
+
+        solutionAcceptor = new SimulationAnnealingSolutionAcceptor
+                .Builder()
+                .setInitialTemperatur(standardDeviationOfInitSolutionCost)
+                .setAlpha(0.99)
+                .setBeta(1.05)
+                .setUpdateStep(5)
+                .setTerminateTemp(0.001)
+                .build();
+
+
         VRPSolution vrpSolutionK_p1 = null;
-        VRPSolution bestSolution = null;
-        double preSolutionCost = vrpSolutionK.getSolutionCost();
-        double bestSolutionCost = vrpSolutionK.getSolutionCost();
-        double currentSolutionCost = 0;
+        VRPSolution bestSolution = vrpSolutionK;
+        double preSolutionCost = bestInitSolutionCost;
+        double bestSolutionCost = bestInitSolutionCost;
+        double currentSolutionCost;
         if(logger != null) {
             logger.addSolutionCost(vrpSolutionK.getSolutionCost());
         }
-        while (continueSearchSolutionFlag) {
-            currentRuinStrategy = ruinStrategies.get(ruinedRouletteWheel.roll());
-            currentRecreateStrategy = recreateStrategies.get(recreateRouletteWheel.roll());
+        for (VRPSolution initialSolution :
+                initialSolutions) {
+            vrpSolutionK = initialSolution;
+            while (continueSearchSolutionFlag) {
+                currentRuinStrategy = ruinStrategies.get(ruinedRouletteWheel.roll());
+                currentRecreateStrategy = recreateStrategies.get(recreateRouletteWheel.roll());
+                vrpSolutionK_p1 = currentRuinStrategy.ruin(vrpInstance, vrpSolutionK, ruinRate);
+                vrpSolutionK_p1 = currentRecreateStrategy.recreate(vrpSolutionK_p1, currentRuinStrategy.getRemovedCustomerIds());
 
-            vrpSolutionK_p1 = currentRuinStrategy.ruin(vrpInstance, vrpSolutionK, ruinRate);
-            vrpSolutionK_p1 = currentRecreateStrategy.recreate(vrpSolutionK_p1, ruinStrategy.getRemovedCustomerIds());
-
-            if(!vrpSolutionK_p1.isSolutionValid()) {
-                StringBuilder sb = new StringBuilder();
-                appendStringLine(sb, "Recreate solution is invalid: run counter: " + runCounter);
-                appendStringLine(sb, vrpSolutionK_p1.toString());
-                throw new Exception(sb.toString());
-            }
-
-            currentSolutionCost = vrpSolutionK_p1.getSolutionCost();
-            if(currentSolutionCost < preSolutionCost) {
-                vrpSolutionK = vrpSolutionK_p1;
-                preSolutionCost = currentSolutionCost;
-                if(currentSolutionCost < bestSolutionCost) {
-                    bestSolutionCost = currentSolutionCost;
-                    bestSolution = vrpSolutionK_p1;
-                    currentSolutionType = RouletteWheel.SolutionType.BEST_SOLUTION;
-                } else {
-                    currentSolutionType = RouletteWheel.SolutionType.BETTER_SOLUTION;
-                }
-            } else {
-                if(solutionAcceptor.acceptSolution(preSolutionCost, currentSolutionCost)) {
+                currentSolutionCost = vrpSolutionK_p1.getSolutionCost();
+                if (currentSolutionCost < preSolutionCost
+                        && vrpSolutionK_p1.isNumberOfRoutesValid()) {
                     vrpSolutionK = vrpSolutionK_p1;
                     preSolutionCost = currentSolutionCost;
-                    currentSolutionType = RouletteWheel.SolutionType.ACCEPTED_SOLUTION;
+                    if (currentSolutionCost < bestSolutionCost) {
+                        bestSolutionCost = currentSolutionCost;
+                        bestSolution = vrpSolutionK_p1;
+                        currentSolutionType = RouletteWheel.SolutionType.BEST_SOLUTION;
+                    } else {
+                        currentSolutionType = RouletteWheel.SolutionType.BETTER_SOLUTION;
+                    }
                 } else {
-                    currentSolutionType = RouletteWheel.SolutionType.REJECTED_SOLUTION;
+                    if (solutionAcceptor.acceptSolution(preSolutionCost, currentSolutionCost)) {
+                        vrpSolutionK = vrpSolutionK_p1;
+                        preSolutionCost = currentSolutionCost;
+                        currentSolutionType = RouletteWheel.SolutionType.ACCEPTED_SOLUTION;
+                    } else {
+                        currentSolutionType = RouletteWheel.SolutionType.REJECTED_SOLUTION;
+                    }
                 }
-            }
-            solutionAcceptor.updateAcceptor();
-            ruinedRouletteWheel.updateWeight(ruinStrategies.indexOf(currentRuinStrategy), currentSolutionType);
-            recreateRouletteWheel.updateWeight(recreateStrategies.indexOf(currentRecreateStrategy), currentSolutionType);
-            runCounter++;
-            continueSearchSolutionFlag = continueToSearch(runCounter, solutionAcceptor.canTerminateSearching());
-            if(logger != null) {
-                logger.addSolutionCost(vrpSolutionK.getSolutionCost());
+                solutionAcceptor.updateAcceptor();
+                ruinedRouletteWheel.updateWeight(ruinStrategies.indexOf(currentRuinStrategy), currentSolutionType);
+                recreateRouletteWheel.updateWeight(recreateStrategies.indexOf(currentRecreateStrategy), currentSolutionType);
+                runCounter++;
+                continueSearchSolutionFlag = continueToSearch(runCounter, solutionAcceptor.canTerminateSearching());
+                if (logger != null) {
+                    logger.addSolutionCost(vrpSolutionK.getSolutionCost());
+                }
             }
         }
         if(logger != null) {
@@ -168,11 +218,12 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
     }
 
     public static class Builder {
-        protected ICostCalculator costCalulator;
+        protected int numOfInitSolution;
+        protected ICostCalculator costCalculator;
         protected IDistanceCalculator distanceCalculator;
-        protected IGenerateInitialSolutionStrategy generateInitialSolutionStrategy;
-        protected IRuinStrategy ruinStrategy;
-        protected IRecreateStrategy recreateStrategy;
+        protected GenerateClusteringInitialSolutionStrategy generateInitialSolutionStrategy;
+        protected ArrayList<IRuinStrategy> ruinStrategies;
+        protected ArrayList<IRecreateStrategy> recreateStrategies;
         protected ISolutionAcceptor solutionAcceptor;
         protected int maxRun;
 
@@ -182,24 +233,32 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
 
 
         public Builder(ICostCalculator costCalculator, IDistanceCalculator distanceCalculator) {
-            this.costCalulator = costCalculator;
+            this.costCalculator = costCalculator;
             this.distanceCalculator = distanceCalculator;
+            ruinStrategies = new ArrayList<>();
+            recreateStrategies = new ArrayList<>();
             maxRun = 0;
+            numOfInitSolution = 10;
             logSolution = false;
         }
 
-        public Builder setInitializeSolutionStrategy(IGenerateInitialSolutionStrategy generateInitialSolution) {
+        public Builder setNumberOfSolution(int numberOfSolution) {
+            this.numOfInitSolution = numberOfSolution;
+            return this;
+        }
+
+        public Builder setInitializeSolutionStrategy(GenerateClusteringInitialSolutionStrategy generateInitialSolution) {
             this.generateInitialSolutionStrategy = generateInitialSolution;
             return this;
         }
 
-        public Builder setRuinStrategy(IRuinStrategy ruinStrategy) {
-            this.ruinStrategy = ruinStrategy;
+        public Builder addRuinStrategies(IRuinStrategy ruinStrategies) {
+            this.ruinStrategies.add(ruinStrategies);
             return this;
         }
 
-        public Builder setRecreateStrategy(IRecreateStrategy recreateStrategy) {
-            this.recreateStrategy = recreateStrategy;
+        public Builder addRecreateStrategies(IRecreateStrategy recreateStrategies) {
+            this.recreateStrategies.add(recreateStrategies);
             return this;
         }
 
@@ -220,14 +279,14 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
         }
 
         public RuinAndRecreateAlgorithm build() {
-            if(generateInitialSolutionStrategy == null || ruinStrategy == null || recreateStrategy == null
-                    || solutionAcceptor == null|| maxRun <= 0) {
+            if(generateInitialSolutionStrategy == null || ruinStrategies == null || recreateStrategies == null
+                    || maxRun <= 0) {
                 throw new IllegalStateException("Not enough parameters to create RuinAndRecreate object");
             }
-            RuinAndRecreateAlgorithm result = new RuinAndRecreateAlgorithm(costCalulator, distanceCalculator);
+            RuinAndRecreateAlgorithm result = new RuinAndRecreateAlgorithm(costCalculator, distanceCalculator);
             result.generateInitialSolutionStrategy = generateInitialSolutionStrategy;
-            result.ruinStrategy = ruinStrategy;
-            result.recreateStrategy = recreateStrategy;
+            ruinStrategies.forEach(result::addRuiStrategy);
+            recreateStrategies.forEach(result::addRecreateStrategy);
             result.solutionAcceptor = solutionAcceptor;
             result.maxRun = maxRun;
             if(logSolution) {

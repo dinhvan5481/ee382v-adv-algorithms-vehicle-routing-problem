@@ -25,6 +25,21 @@ def read_routes(route_file_name):
     return list(routes)
 
 
+def calculate_distance(from_customer, to_customer):
+    return ((from_customer['xCord'] - to_customer['xCord']) ** 2 + (from_customer['yCord'] - to_customer['yCord']) ** 2) ** (1 / 2)
+
+
+def calculate_route_cost(customers, routes):
+    solution_cost = 0
+    for route in routes:
+        cost = 0
+        for i in range(0, len(route) - 1):
+            cost += calculate_distance(customers.get(route[i]), customers.get(route[i+1]))
+        solution_cost += cost
+        print('route: {} - cost: {}'.format(route, cost))
+
+    print('Solution cost: {}'.format(solution_cost))
+
 def main():
     vrp_instance_name = 'A-n37-k6.csv'
     customers = read_vrp_instance('../data/A-VRP/{}'.format(vrp_instance_name))
@@ -47,4 +62,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    #main()
+    vrp_instance_name = 'A-n37-k6.csv'
+    customers = read_vrp_instance('../data/A-VRP/{}'.format(vrp_instance_name))
+    routes = read_routes('../solutions/A-VRP/{}'.format(vrp_instance_name))
+
+    calculate_route_cost(customers, routes)

@@ -51,41 +51,52 @@ public class SimulationAnnealingSolutionAcceptor implements ISolutionAcceptor {
     }
 
     public static class Builder {
-        SimulationAnnealingSolutionAcceptor result;
+        protected double initialTemp;
+        protected double termninateTemp;
+        protected double alpha;
+        protected double beta;
+        protected int updateStep;
+
 
         public Builder() {
-            result = new SimulationAnnealingSolutionAcceptor();
         }
 
         public Builder setInitialTemperatur(double initialTemperature) {
             //TODO: make sure initial temperature > 0
-            result.initialTemp = initialTemperature;
+            this.initialTemp = initialTemperature;
             return this;
         }
 
         public Builder setTerminateTemp(double terminateTemp) {
-            result.termninateTemp = terminateTemp;
+            this.termninateTemp = terminateTemp;
             return this;
         }
 
         public Builder setAlpha(double alpha) {
             // TODO: make sure alpha in range: (0, 1)
-            result.alpha = alpha;
+            this.alpha = alpha;
             return this;
         }
 
         public Builder setBeta(double beta) {
             // TODO: make sure beta (1, +inf)
-            result.beta = beta;
+            this.beta = beta;
             return this;
         }
 
         public Builder setUpdateStep(int updateStep) {
-            result.updateStep = updateStep;
+            this.updateStep = updateStep;
             return this;
         }
 
         public ISolutionAcceptor build() {
+            SimulationAnnealingSolutionAcceptor result = new SimulationAnnealingSolutionAcceptor();
+            result.initialTemp = initialTemp;
+            result.currentTemp = initialTemp;
+            result.termninateTemp = termninateTemp;
+            result.updateStep = updateStep;
+            result.beta = beta;
+            result.alpha = alpha;
             return result;
         }
     }

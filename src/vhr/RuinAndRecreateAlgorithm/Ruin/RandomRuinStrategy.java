@@ -29,7 +29,7 @@ public class RandomRuinStrategy extends AbstractRuinStrategy {
 
         for (int i = 0; i < numberOfNodeWillBeRemoved; i++) {
             int customerId;
-            {
+            do {
                 customerId = ThreadLocalRandom.current().nextInt(minCustomerId, maxCustomerId + 1);
             } while (vrpInstance.getCustomer(customerId) == null || removedCustomerIds.contains(customerId));
             removedCustomerIds.add(customerId);

@@ -26,7 +26,7 @@ public class CVRPCostCalculator implements ICostCalculator {
     public double calculateRouteCost(LinkedList<Integer> routeWithoutDepot, VRPInstance vrpInstance) {
         double result = 0;
         Customer from = vrpInstance.getDepot();
-        for (int i = 0; i < routeWithoutDepot.size() - 1; i++) {
+        for (int i = 0; i < routeWithoutDepot.size(); i++) {
             Customer to = vrpInstance.getCustomer(routeWithoutDepot.get(i));
             result += calculate(from, to);
             from = to;

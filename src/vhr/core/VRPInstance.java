@@ -15,6 +15,7 @@ public class VRPInstance {
     private String comment;
     private int numberOfCustomers;
     private double capacity;
+    private int maxTruck;
     private HashMap<Integer, Customer> customers;
     private Customer depot;
 
@@ -120,14 +121,6 @@ public class VRPInstance {
         return true;
     }
 
-    public double getCost(Customer from, Customer to) {
-        DeliveryPath path = new DeliveryPath(from, to);
-        if(!costMatrix.containsKey(path)) {
-            costMatrix.put(path, costCalculator.calculate(path));
-        }
-        return costMatrix.get(path);
-    }
-
     public double getDistance(Customer from, Customer to) {
         DeliveryPath path = new DeliveryPath(from, to);
         if(!distanceMatrix.containsKey(path)) {
@@ -138,13 +131,6 @@ public class VRPInstance {
 
     public double getRouteCost(LinkedList<Integer> route) {
         return costCalculator.calculateRouteCost(route, this);
-    }
-
-    public double getRouteCost(VehicleRoute route) {
-        if(!vehicleRoutes.contains(route)) {
-            return vehicleRoutes.put(route, getRouteCost(route.getRoute()));
-        }
-        return vehicleRoutes.get(route);
     }
 
     public ICostCalculator getCostCalculator() {
@@ -189,15 +175,25 @@ public class VRPInstance {
 
     }
 
+    public int getMaxTruck() {
+        return maxTruck;
+    }
+
+    public void setMaxTruck(int maxTruck) {
+        this.maxTruck = maxTruck;
+    }
+
     public static class Builder {
         private IDataExtract dataExtract;
         private String fileName;
 
         private ICostCalculator costCalculator;
         private IDistanceCalculator distanceCalculator;
+        private int maxTruck;
 
         public Builder(IDataExtract dataExtract) {
             this.dataExtract = dataExtract;
+            maxTruck = -1;
         }
 
         public Builder setDataFileName(String fileName) {
@@ -209,6 +205,8 @@ public class VRPInstance {
             this.costCalculator = costCalculator;
             return this;
         }
+
+
 
         public Builder setDistanceCalculator(IDistanceCalculator distanceCalculator) {
             this.distanceCalculator = distanceCalculator;
@@ -222,7 +220,13 @@ public class VRPInstance {
             VRPInstance vrpInstance = dataExtract.extractDataFrom(fileName);
             vrpInstance.costCalculator = costCalculator;
             vrpInstance.distanceCalculator = distanceCalculator;
+            vrpInstance.maxTruck = maxTruck;
             return vrpInstance;
+        }
+
+        public Builder setMaxTruck(int maxTruck) {
+            this.maxTruck = maxTruck;
+            return this;
         }
     }
 }
