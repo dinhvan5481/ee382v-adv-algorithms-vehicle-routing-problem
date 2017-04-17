@@ -3,20 +3,24 @@ package vhr.RuinAndRecreateAlgorithm.Recreate;
 import vhr.core.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by quachv on 4/3/2017.
  */
 public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
 
+    protected int MAX_MEMORY_BEST_PATH = 1000;
+    protected HashMap<Integer, BestInsertPositionAndCostHitCounter> bestInsertPositionAndCostHitCounterHashMap;
+
     public GreedyInsertionStrategy(VRPInstance vrpInstance, ICostCalculator costCalculator, IDistanceCalculator distanceCalulator) {
         super(vrpInstance, costCalculator, distanceCalulator);
+        bestInsertPositionAndCostHitCounterHashMap = new HashMap<>(MAX_MEMORY_BEST_PATH);
     }
 
     @Override
     protected void recreateRuinedSolution(VRPSolution ruinedSolution, List<Integer> removedCustomerIds) {
         Collection<VehicleRoute> routes = ruinedSolution.getRoutes();
-        HashMap<Integer, InsertPositionAndCost> insertPositionDict = new HashMap<>(removedCustomerIds.size());
         List<Integer> unassignedCustomer = new ArrayList<>();
 
         for (Integer customerId :
@@ -59,21 +63,34 @@ public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
             if(route.getTotalDemand() + customer.getDemand() > vrpInstance.getCapacity()) {
                 continue;
             }
-            LinkedList<Integer> originalPath = new LinkedList<>(route.getRoute());
-            InsertPositionAndCost insertPositionAndCost = new InsertPositionAndCost(route.getId());
-            int bestPosition = -1;
-            double minCost = Double.MAX_VALUE;
-            for (int position = 0; position < originalPath.size(); position++) {
-                originalPath.add(position, customer.getId());
-                double cost = vrpInstance.getRouteCost(originalPath);
-                if(cost < minCost) {
-                    minCost = cost;
-                    bestPosition = position;
+            InsertPositionAndCost insertPositionAndCost;
+            Collection<Integer> customerIds = new ArrayList<>(route.getCustomerKeys());
+            customerIds.add(customer.getId());
+            int hashCode = hashing(customerIds);
+
+            if(bestInsertPositionAndCostHitCounterHashMap.containsKey(hashCode)) {
+                insertPositionAndCost = bestInsertPositionAndCostHitCounterHashMap.get(hashCode).getBestInsertPositionAndCost();
+                insertPositionAndCost.setRouteId(route.getId());
+                bestInsertPositionAndCostHitCounterHashMap.get(hashCode).hit();
+            } else {
+                LinkedList<Integer> originalPath = new LinkedList<>(route.getRoute());
+                insertPositionAndCost = new InsertPositionAndCost(route.getId());
+                int bestPosition = -1;
+                double minCost = Double.MAX_VALUE;
+                for (int position = 0; position < originalPath.size(); position++) {
+                    originalPath.add(position, customer.getId());
+                    double cost = vrpInstance.getRouteCost(originalPath);
+                    if(cost < minCost) {
+                        minCost = cost;
+                        bestPosition = position;
+                    }
+                    originalPath.remove(position);
                 }
-                originalPath.remove(position);
+                insertPositionAndCost.setCost(minCost);
+                insertPositionAndCost.setPosition(bestPosition);
+                bestInsertPositionAndCostHitCounterHashMap.put(hashCode, new BestInsertPositionAndCostHitCounter(insertPositionAndCost));
             }
-            insertPositionAndCost.setCost(minCost);
-            insertPositionAndCost.setPosition(bestPosition);
+
             if(insertPositionAndCost.compareTo(bestInsertPosition) < 0) {
                 bestInsertPosition = insertPositionAndCost;
             }
@@ -81,10 +98,19 @@ public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
         return bestInsertPosition;
     }
 
+    private static int hashing(Collection<Integer> customerIds) {
+        List<Integer> orderedCustomerIds = customerIds.stream().sorted().collect(Collectors.toList());
+        return orderedCustomerIds.hashCode();
+   }
+
     private class InsertPositionAndCost implements Comparable<InsertPositionAndCost> {
         private int routeId;
         private int position;
         private double cost;
+
+        public InsertPositionAndCost() {
+
+        }
 
         public InsertPositionAndCost(int routeId) {
             this.routeId = routeId;
@@ -102,6 +128,10 @@ public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
             return routeId;
         }
 
+        public void setRouteId(int routeId) {
+            this.routeId = routeId;
+        }
+
         @Override
         public int compareTo(InsertPositionAndCost o) {
             if(o == null) {
@@ -116,6 +146,28 @@ public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
 
         public void setCost(double cost) {
             this.cost = cost;
+        }
+    }
+
+    private class BestInsertPositionAndCostHitCounter {
+        private InsertPositionAndCost insertPositionAndCost;
+        private int hitCounter;
+
+        public BestInsertPositionAndCostHitCounter(InsertPositionAndCost insertPositionAndCost) {
+            this.insertPositionAndCost = insertPositionAndCost;
+            hitCounter = 1;
+        }
+
+        public InsertPositionAndCost getBestInsertPositionAndCost() {
+            return insertPositionAndCost;
+        }
+
+        public void hit() {
+            hitCounter++;
+        }
+
+        public int getHitCounter() {
+            return hitCounter;
         }
     }
 

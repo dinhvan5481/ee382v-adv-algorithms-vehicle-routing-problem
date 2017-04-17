@@ -36,14 +36,12 @@ def calculate_route_cost(customers, routes):
         for i in range(0, len(route) - 1):
             cost += calculate_distance(customers.get(route[i]), customers.get(route[i+1]))
         solution_cost += cost
-        print('route: {} - cost: {}'.format(route, cost))
-
-    print('Solution cost: {}'.format(solution_cost))
+    return solution_cost
 
 def main():
-    vrp_instance_name = 'A-n37-k6.csv'
-    customers = read_vrp_instance('../data/A-VRP/{}'.format(vrp_instance_name))
-    routes = read_routes('../solutions/A-VRP/{}'.format(vrp_instance_name))
+    vrp_instance_name = 'A-n37-k6'
+    customers = read_vrp_instance('../data/A-VRP/{}.csv'.format(vrp_instance_name))
+    routes = read_routes('../solutions/A-VRP/{}.csv'.format(vrp_instance_name))
     fig = pyplot.figure()
     for route in routes:
         for index in range(len(route) - 1):
@@ -56,13 +54,14 @@ def main():
             pyplot.plot([customer_from['xCord'], customer_to['xCord']], [customer_from['yCord'], customer_to['yCord']],
                         'b')
 
+    solution_cost = int(calculate_route_cost(customers, routes))
     pyplot.plot(customers[1]['xCord'], customers[1]['yCord'], 'rs')
-    fig.savefig('test.pdf')
+    fig.savefig('{}_{}.pdf'.format(vrp_instance_name, solution_cost))
     return
 
 
 if __name__ == '__main__':
-    #main()
+    main()
     vrp_instance_name = 'A-n37-k6.csv'
     customers = read_vrp_instance('../data/A-VRP/{}'.format(vrp_instance_name))
     routes = read_routes('../solutions/A-VRP/{}'.format(vrp_instance_name))

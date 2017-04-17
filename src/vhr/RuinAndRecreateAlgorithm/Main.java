@@ -13,8 +13,8 @@ import vhr.utils.DataSetReader;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by dinhvan5481 on 3/28/17.
@@ -49,7 +49,7 @@ public class Main {
         IRuinStrategy randomRuinStrategy = new RandomRuinStrategy.Builder(randomSeed).build();
         IRuinStrategy sequentialRuinStrategy = new SequentialRuinStrategy.Builder().build();
         IRecreateStrategy recreateStrategy = new GreedyInsertionStrategy.Builder(cvrpInstance, costCalculator, distanceCalculator).build();
-        int maxRun = 500000;
+        int maxRun = 1000000;
 
         // TODO: need to work on intial temp
         IVRPAlgorithm ruinAndRecreateAlg = new RuinAndRecreateAlgorithm.Builder(costCalculator, distanceCalculator)
@@ -80,5 +80,8 @@ public class Main {
         }
 
 
+
+
     }
+
 }
