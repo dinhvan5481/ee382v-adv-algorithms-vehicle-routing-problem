@@ -128,46 +128,44 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
         if(logger != null) {
             logger.addSolutionCost(vrpSolutionK.getSolutionCost());
         }
-        for (VRPSolution initialSolution :
-                initialSolutions) {
-            vrpSolutionK = initialSolution;
-            while (continueSearchSolutionFlag) {
-                currentRuinStrategy = ruinStrategies.get(ruinedRouletteWheel.roll());
-                currentRecreateStrategy = recreateStrategies.get(recreateRouletteWheel.roll());
-                vrpSolutionK_p1 = currentRuinStrategy.ruin(vrpInstance, vrpSolutionK, ruinRate);
-                vrpSolutionK_p1 = currentRecreateStrategy.recreate(vrpSolutionK_p1, currentRuinStrategy.getRemovedCustomerIds());
 
-                currentSolutionCost = vrpSolutionK_p1.getSolutionCost();
-                if (currentSolutionCost < preSolutionCost
-                        && vrpSolutionK_p1.isNumberOfRoutesValid()) {
+        while (continueSearchSolutionFlag) {
+            currentRuinStrategy = ruinStrategies.get(ruinedRouletteWheel.roll());
+            currentRecreateStrategy = recreateStrategies.get(recreateRouletteWheel.roll());
+            vrpSolutionK_p1 = currentRuinStrategy.ruin(vrpInstance, vrpSolutionK, ruinRate);
+            vrpSolutionK_p1 = currentRecreateStrategy.recreate(vrpSolutionK_p1, currentRuinStrategy.getRemovedCustomerIds());
+
+            currentSolutionCost = vrpSolutionK_p1.getSolutionCost();
+            if (currentSolutionCost < preSolutionCost
+                    && vrpSolutionK_p1.isNumberOfRoutesValid()) {
+                vrpSolutionK = vrpSolutionK_p1;
+                preSolutionCost = currentSolutionCost;
+                if (currentSolutionCost < bestSolutionCost) {
+                    bestSolutionCost = currentSolutionCost;
+                    bestSolution = vrpSolutionK_p1;
+                    currentSolutionType = RouletteWheel.SolutionType.BEST_SOLUTION;
+                } else {
+                    currentSolutionType = RouletteWheel.SolutionType.BETTER_SOLUTION;
+                }
+            } else {
+                if (solutionAcceptor.acceptSolution(preSolutionCost, currentSolutionCost)) {
                     vrpSolutionK = vrpSolutionK_p1;
                     preSolutionCost = currentSolutionCost;
-                    if (currentSolutionCost < bestSolutionCost) {
-                        bestSolutionCost = currentSolutionCost;
-                        bestSolution = vrpSolutionK_p1;
-                        currentSolutionType = RouletteWheel.SolutionType.BEST_SOLUTION;
-                    } else {
-                        currentSolutionType = RouletteWheel.SolutionType.BETTER_SOLUTION;
-                    }
+                    currentSolutionType = RouletteWheel.SolutionType.ACCEPTED_SOLUTION;
                 } else {
-                    if (solutionAcceptor.acceptSolution(preSolutionCost, currentSolutionCost)) {
-                        vrpSolutionK = vrpSolutionK_p1;
-                        preSolutionCost = currentSolutionCost;
-                        currentSolutionType = RouletteWheel.SolutionType.ACCEPTED_SOLUTION;
-                    } else {
-                        currentSolutionType = RouletteWheel.SolutionType.REJECTED_SOLUTION;
-                    }
-                }
-                solutionAcceptor.updateAcceptor();
-                ruinedRouletteWheel.updateWeight(ruinStrategies.indexOf(currentRuinStrategy), currentSolutionType);
-                recreateRouletteWheel.updateWeight(recreateStrategies.indexOf(currentRecreateStrategy), currentSolutionType);
-                runCounter++;
-                continueSearchSolutionFlag = continueToSearch(runCounter, solutionAcceptor.canTerminateSearching());
-                if (logger != null) {
-                    logger.addSolutionCost(vrpSolutionK.getSolutionCost());
+                    currentSolutionType = RouletteWheel.SolutionType.REJECTED_SOLUTION;
                 }
             }
+            solutionAcceptor.updateAcceptor();
+            ruinedRouletteWheel.updateWeight(ruinStrategies.indexOf(currentRuinStrategy), currentSolutionType);
+            recreateRouletteWheel.updateWeight(recreateStrategies.indexOf(currentRecreateStrategy), currentSolutionType);
+            runCounter++;
+            continueSearchSolutionFlag = continueToSearch(runCounter, solutionAcceptor.canTerminateSearching());
+            if (logger != null) {
+                logger.addSolutionCost(vrpSolutionK.getSolutionCost());
+            }
         }
+
         if(logger != null) {
             logger.toCSV(logFileName);
         }
