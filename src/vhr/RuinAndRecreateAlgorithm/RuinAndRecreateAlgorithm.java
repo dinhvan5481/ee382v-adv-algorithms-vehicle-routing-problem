@@ -117,6 +117,7 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
                 .setBeta(1.05)
                 .setUpdateStep(5)
                 .setTerminateTemp(0.001)
+                .setMaxNoiseRange(bestInitSolutionCost)
                 .build();
 
 

@@ -49,7 +49,7 @@ public class Main {
         IRuinStrategy randomRuinStrategy = new RandomRuinStrategy.Builder(randomSeed).build();
         IRuinStrategy sequentialRuinStrategy = new SequentialRuinStrategy.Builder().build();
         IRecreateStrategy recreateStrategy = new GreedyInsertionStrategy.Builder(cvrpInstance, costCalculator, distanceCalculator).build();
-        int maxRun = 1000000;
+        int maxRun = 50000;
 
         // TODO: need to work on intial temp
         IVRPAlgorithm ruinAndRecreateAlg = new RuinAndRecreateAlgorithm.Builder(costCalculator, distanceCalculator)
