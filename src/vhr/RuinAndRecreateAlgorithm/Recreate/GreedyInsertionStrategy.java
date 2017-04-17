@@ -88,7 +88,7 @@ public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
                 }
                 insertPositionAndCost.setCost(minCost);
                 insertPositionAndCost.setPosition(bestPosition);
-                bestInsertPositionAndCostHitCounterHashMap.put(hashCode, new BestInsertPositionAndCostHitCounter(insertPositionAndCost));
+                putBestInsertPositionToHashMap(hashCode, insertPositionAndCost);
             }
 
             if(insertPositionAndCost.compareTo(bestInsertPosition) < 0) {
@@ -101,6 +101,18 @@ public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
     private static int hashing(Collection<Integer> customerIds) {
         List<Integer> orderedCustomerIds = customerIds.stream().sorted().collect(Collectors.toList());
         return orderedCustomerIds.hashCode();
+   }
+
+   private void putBestInsertPositionToHashMap(int hashCode, InsertPositionAndCost insertPositionAndCost) {
+        if(bestInsertPositionAndCostHitCounterHashMap.size() < MAX_MEMORY_BEST_PATH) {
+            bestInsertPositionAndCostHitCounterHashMap.put(hashCode, new BestInsertPositionAndCostHitCounter(insertPositionAndCost));
+            return;
+        }
+        int minHitEntryKey = Collections.min(bestInsertPositionAndCostHitCounterHashMap.entrySet(),
+                Comparator.comparingInt(e -> e.getValue().getHitCounter())
+                ).getKey();
+        bestInsertPositionAndCostHitCounterHashMap.remove(minHitEntryKey);
+        bestInsertPositionAndCostHitCounterHashMap.put(hashCode, new BestInsertPositionAndCostHitCounter(insertPositionAndCost));
    }
 
     private class InsertPositionAndCost implements Comparable<InsertPositionAndCost> {
