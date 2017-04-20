@@ -5,6 +5,7 @@ import vhr.RuinAndRecreateAlgorithm.InitializeSolution.IGenerateInitialSolutionS
 import vhr.RuinAndRecreateAlgorithm.Recreate.GreedyInsertionStrategy;
 import vhr.RuinAndRecreateAlgorithm.Recreate.IRecreateStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.IRuinStrategy;
+import vhr.RuinAndRecreateAlgorithm.Ruin.RadicalRuinStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.RandomRuinStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.SequentialRuinStrategy;
 import vhr.SolutionAcceptor.SimulationAnnealingSolutionAcceptor;
@@ -46,8 +47,9 @@ public class Main {
         GenerateClusteringInitialSolutionStrategy generateInitialSolutionStrategy =
                 new GenerateClusteringInitialSolutionStrategy
                         .Builder(randomSeed).build();
-        IRuinStrategy randomRuinStrategy = new RandomRuinStrategy.Builder(randomSeed).build();
+        IRuinStrategy randomRuinStrategy = new RandomRuinStrategy.Builder().build();
         IRuinStrategy sequentialRuinStrategy = new SequentialRuinStrategy.Builder().build();
+        IRuinStrategy radicalRuinStrategy = new RadicalRuinStrategy();
         IRecreateStrategy recreateStrategy = new GreedyInsertionStrategy.Builder(cvrpInstance, costCalculator, distanceCalculator).build();
         int maxRun = 50000;
 
@@ -56,6 +58,7 @@ public class Main {
                 .setInitializeSolutionStrategy(generateInitialSolutionStrategy)
                 .addRuinStrategies(randomRuinStrategy)
                 .addRuinStrategies(sequentialRuinStrategy)
+                .addRuinStrategies(radicalRuinStrategy)
                 .addRecreateStrategies(recreateStrategy)
                 .setMaxRun(maxRun)
                 .setLogSolution(logCostFileName)

@@ -15,11 +15,9 @@ import static java.util.Collections.max;
  * Created by quachv on 3/29/2017.
  */
 public class RandomRuinStrategy extends AbstractRuinStrategy {
-    private Random random;
 
-    public RandomRuinStrategy(long seed) {
+    public RandomRuinStrategy() {
         super();
-        random = new Random(seed);
     }
     @Override
     protected void ruinSolution(VRPInstance vrpInstance, VRPSolution ruinSolution, double ruinRate) {
@@ -34,22 +32,16 @@ public class RandomRuinStrategy extends AbstractRuinStrategy {
             } while (vrpInstance.getCustomer(customerId) == null || removedCustomerIds.contains(customerId));
             removedCustomerIds.add(customerId);
         }
-        ruinSolution.getRoutes().forEach((VehicleRoute route) -> {
-            removedCustomerIds.forEach((Integer customerId) -> {
-                route.removeCustomer(customerId);
-            });
-        });
     }
 
     public static class Builder {
-        private long seed;
 
-        public Builder(long seed) {
-            this.seed = seed;
+        public Builder() {
+
         }
 
         public AbstractRuinStrategy build() {
-            return new RandomRuinStrategy(seed);
+            return new RandomRuinStrategy();
         }
     }
 }

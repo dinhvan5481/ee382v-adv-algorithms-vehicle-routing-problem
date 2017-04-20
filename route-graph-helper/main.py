@@ -1,6 +1,7 @@
 import matplotlib as plt
 from matplotlib import pyplot
 import pandas as pd
+from cycler import cycler
 
 
 def read_vrp_instance(file_name):
@@ -43,6 +44,8 @@ def main():
     customers = read_vrp_instance('../data/A-VRP/{}.csv'.format(vrp_instance_name))
     routes = read_routes('../solutions/A-VRP/{}.csv'.format(vrp_instance_name))
     fig = pyplot.figure()
+    color_cycle_counter = 0
+    pyplot.rc('axes', prop_cycle=(cycler('color', ['r', 'g', 'b', 'y'])))
     for route in routes:
         for index in range(len(route) - 1):
             customer_id_from = route[index]
@@ -52,7 +55,9 @@ def main():
             pyplot.plot([customer_from['xCord'], customer_to['xCord']], [customer_from['yCord'], customer_to['yCord']],
                         'yo')
             pyplot.plot([customer_from['xCord'], customer_to['xCord']], [customer_from['yCord'], customer_to['yCord']],
-                        'b')
+                        'C{}'.format(color_cycle_counter))
+
+        color_cycle_counter += 1
 
     solution_cost = int(calculate_route_cost(customers, routes))
     pyplot.plot(customers[1]['xCord'], customers[1]['yCord'], 'rs')
