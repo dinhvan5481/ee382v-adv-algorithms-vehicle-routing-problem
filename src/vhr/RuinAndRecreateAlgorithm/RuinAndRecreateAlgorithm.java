@@ -3,6 +3,7 @@ package vhr.RuinAndRecreateAlgorithm;
 import vhr.RuinAndRecreateAlgorithm.InitializeSolution.GenerateClusteringInitialSolutionStrategy;
 import vhr.RuinAndRecreateAlgorithm.InitializeSolution.IGenerateInitialSolutionStrategy;
 import vhr.RuinAndRecreateAlgorithm.Recreate.IRecreateStrategy;
+import vhr.RuinAndRecreateAlgorithm.Ruin.ClarkWrightSavingsRuinStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.IRuinStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.LeastCustomerRuinStrategy;
 import vhr.SolutionAcceptor.ISolutionAcceptor;

@@ -2,8 +2,10 @@ package vhr.RuinAndRecreateAlgorithm;
 
 import vhr.RuinAndRecreateAlgorithm.InitializeSolution.GenerateClusteringInitialSolutionStrategy;
 import vhr.RuinAndRecreateAlgorithm.InitializeSolution.IGenerateInitialSolutionStrategy;
+import vhr.RuinAndRecreateAlgorithm.Recreate.ClarkWrightSavingsStrategy;
 import vhr.RuinAndRecreateAlgorithm.Recreate.GreedyInsertionStrategy;
 import vhr.RuinAndRecreateAlgorithm.Recreate.IRecreateStrategy;
+import vhr.RuinAndRecreateAlgorithm.Ruin.ClarkWrightSavingsRuinStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.IRuinStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.RandomRuinStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.SequentialRuinStrategy;
@@ -48,7 +50,10 @@ public class Main {
                         .Builder(randomSeed).build();
         IRuinStrategy randomRuinStrategy = new RandomRuinStrategy.Builder(randomSeed).build();
         IRuinStrategy sequentialRuinStrategy = new SequentialRuinStrategy.Builder().build();
+        IRuinStrategy savingRuinStrategy = new ClarkWrightSavingsRuinStrategy();
         IRecreateStrategy recreateStrategy = new GreedyInsertionStrategy.Builder(cvrpInstance, costCalculator, distanceCalculator).build();
+        IRecreateStrategy savingStrategy = new ClarkWrightSavingsStrategy.Builder(cvrpInstance, costCalculator, distanceCalculator).build();
+
         int maxRun = 500000;
 
         // TODO: need to work on intial temp
@@ -56,7 +61,9 @@ public class Main {
                 .setInitializeSolutionStrategy(generateInitialSolutionStrategy)
                 .addRuinStrategies(randomRuinStrategy)
                 .addRuinStrategies(sequentialRuinStrategy)
+                .addRuinStrategies(savingRuinStrategy)
                 .addRecreateStrategies(recreateStrategy)
+                .addRecreateStrategies(savingStrategy)
                 .setMaxRun(maxRun)
                 .setLogSolution(logCostFileName)
                 .build();
