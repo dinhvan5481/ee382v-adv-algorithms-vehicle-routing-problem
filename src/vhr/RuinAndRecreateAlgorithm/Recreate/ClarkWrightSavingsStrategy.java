@@ -23,7 +23,7 @@ public class ClarkWrightSavingsStrategy extends AbstractRecreateStrategy{
         List<Integer> unassignedCustomer = new ArrayList<>();
         for (Integer customerId : removedCustomerIds) {
             Customer customer = vrpInstance.getCustomer(customerId);
-            InsertPositionAndCost bestInsertPosition = findPositionOfMinimumCostWhenInsert(customer, routes);
+            InsertPositionAndSaving bestInsertPosition = findPositionOfMinimumCostWhenInsert(customer, routes);
             if(bestInsertPosition != null) {
                 VehicleRoute route = ruinedSolution.getRoute(bestInsertPosition.getRouteId());
                 route.addCustomer(customerId);
@@ -55,8 +55,8 @@ public class ClarkWrightSavingsStrategy extends AbstractRecreateStrategy{
         }
 
     }
-    private InsertPositionAndCost findPositionOfMinimumCostWhenInsert(Customer removedCustomer, Collection<VehicleRoute> routes)    {
-        InsertPositionAndCost bestInsertPosition = null;
+    private InsertPositionAndSaving findPositionOfMinimumCostWhenInsert(Customer removedCustomer, Collection<VehicleRoute> routes)    {
+        InsertPositionAndSaving bestInsertPosition = null;
         Iterator<VehicleRoute> routeIterator = routes.iterator();
         while (routeIterator.hasNext()) {
             VehicleRoute route = routeIterator.next();
@@ -82,17 +82,20 @@ public class ClarkWrightSavingsStrategy extends AbstractRecreateStrategy{
                 i++;
             }
 
-            InsertPositionAndCost insertPositionAndCost = new InsertPositionAndCost(route.getId());
+            InsertPositionAndSaving insertPositionAndSaving = new InsertPositionAndSaving(route.getId());
             int bestPosition = -1;
-            double minCost = Double.MAX_VALUE;
+            maxSaving = Double.MIN_VALUE;
             //try to insert before maxSavingIndex customer
             if(maxSavingIndex>0)
             {
                 int position = maxSavingIndex-1;
                 originalPath.add(position, removedCustomer.getId());
-                double cost = vrpInstance.getRouteCost(originalPath);
-                if(cost < minCost) {
-                    minCost = cost;
+                double saving = getTotalSavingFrom2Neighbors(removedCustomer,
+                        position==0? null : originalPath.get(position-1),
+                        position==originalPath.size()-1? null : originalPath.get(position+1));
+
+                if(saving > maxSaving) {
+                    maxSaving = saving;
                     bestPosition = position;
                 }
                 originalPath.remove(position);
@@ -100,17 +103,20 @@ public class ClarkWrightSavingsStrategy extends AbstractRecreateStrategy{
             //try to insert after maxSavingIndex customer
             int position = maxSavingIndex+1;
             originalPath.add(position, removedCustomer.getId());
-            double cost = vrpInstance.getRouteCost(originalPath);
-            if(cost < minCost) {
-                minCost = cost;
+            double saving = getTotalSavingFrom2Neighbors(removedCustomer,
+                    position==0? null : originalPath.get(position-1),
+                    position==originalPath.size()-1? null : originalPath.get(position+1));
+
+            if(saving > maxSaving) {
+                maxSaving = saving;
                 bestPosition = position;
             }
             originalPath.remove(position);
 
-            insertPositionAndCost.setCost(minCost);
-            insertPositionAndCost.setPosition(bestPosition);
-            if(insertPositionAndCost.compareTo(bestInsertPosition) < 0) {
-                bestInsertPosition = insertPositionAndCost;
+            insertPositionAndSaving.setSaving(maxSaving);
+            insertPositionAndSaving.setPosition(bestPosition);
+            if(insertPositionAndSaving.compareTo(bestInsertPosition) > 0) {
+                bestInsertPosition = insertPositionAndSaving;
             }
         }
         return bestInsertPosition;
@@ -145,6 +151,44 @@ public class ClarkWrightSavingsStrategy extends AbstractRecreateStrategy{
         }
         public IRecreateStrategy build() {
             return new ClarkWrightSavingsStrategy(vrpInstance, costCalculator, distanceCalculator);
+        }
+    }
+
+    private class InsertPositionAndSaving implements Comparable<InsertPositionAndSaving> {
+        private int routeId;
+        private int position;
+        private double saving;
+
+        public InsertPositionAndSaving(int routeId) {
+            this.routeId = routeId;
+        }
+
+        public int getPosition() {
+            return position;
+        }
+
+        public double getSaving() {
+            return saving;
+        }
+
+        public int getRouteId() {
+            return routeId;
+        }
+
+        @Override
+        public int compareTo(InsertPositionAndSaving o) {
+            if(o == null) {
+                return -1;
+            }
+            return Double.compare(this.getSaving(), o.getSaving());
+        }
+
+        public void setPosition(int position) {
+            this.position = position;
+        }
+
+        public void setSaving(double saving) {
+            this.saving = saving;
         }
     }
 }
