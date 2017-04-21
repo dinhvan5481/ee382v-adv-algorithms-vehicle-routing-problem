@@ -2,6 +2,7 @@ package vhr.RuinAndRecreateAlgorithm;
 
 import vhr.RuinAndRecreateAlgorithm.InitializeSolution.GenerateClusteringInitialSolutionStrategy;
 import vhr.RuinAndRecreateAlgorithm.InitializeSolution.IGenerateInitialSolutionStrategy;
+import vhr.RuinAndRecreateAlgorithm.InitializeSolution.IncreaseRadicalStrategy;
 import vhr.RuinAndRecreateAlgorithm.Recreate.GreedyInsertionStrategy;
 import vhr.RuinAndRecreateAlgorithm.Recreate.IRecreateStrategy;
 import vhr.RuinAndRecreateAlgorithm.Ruin.IRuinStrategy;
@@ -41,12 +42,12 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        GenerateClusteringInitialSolutionStrategy generateInitialSolution =
-                new GenerateClusteringInitialSolutionStrategy.Builder(randomSeed).build();
+
+        IGenerateInitialSolutionStrategy generateInitialSolutionStrategy = new IncreaseRadicalStrategy();
         cvrpInstance.toCSV(fileName.replace(".vrp", ".csv"));
-        GenerateClusteringInitialSolutionStrategy generateInitialSolutionStrategy =
-                new GenerateClusteringInitialSolutionStrategy
-                        .Builder(randomSeed).build();
+//        GenerateClusteringInitialSolutionStrategy generateInitialSolutionStrategy =
+//                new GenerateClusteringInitialSolutionStrategy
+//                        .Builder(randomSeed).build();
         IRuinStrategy randomRuinStrategy = new RandomRuinStrategy.Builder().build();
         IRuinStrategy sequentialRuinStrategy = new SequentialRuinStrategy.Builder().build();
         IRuinStrategy radicalRuinStrategy = new RadicalRuinStrategy();

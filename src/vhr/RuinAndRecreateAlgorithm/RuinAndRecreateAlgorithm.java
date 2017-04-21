@@ -26,7 +26,7 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
     protected List<Double> initSolutionCosts;
     protected ICostCalculator costCalculator;
     protected IDistanceCalculator distanceCalculator;
-    protected GenerateClusteringInitialSolutionStrategy generateInitialSolutionStrategy;
+    protected IGenerateInitialSolutionStrategy generateInitialSolutionStrategy;
     protected ISolutionAcceptor solutionAcceptor;
 
     protected IRuinStrategy leastCustomerRuinStrategy;
@@ -122,9 +122,14 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
 
 
         VRPSolution vrpSolutionK_p1 = null;
-        VRPSolution bestSolution = vrpSolutionK;
-        double preSolutionCost = bestInitSolutionCost;
-        double bestSolutionCost = bestInitSolutionCost;
+        VRPSolution bestSolution = null;
+        double bestSolutionCost = Double.MAX_VALUE;
+        double preSolutionCost = Double.MAX_VALUE;
+        if(vrpSolutionK.isSolutionValid()) {
+            bestSolution = vrpSolutionK;
+            bestSolutionCost = bestInitSolutionCost;
+            preSolutionCost = bestInitSolutionCost;
+        }
         double currentSolutionCost;
         if(logger != null) {
             logger.addSolutionCost(vrpSolutionK.getSolutionCost());
@@ -138,7 +143,7 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
 
             currentSolutionCost = vrpSolutionK_p1.getSolutionCost();
             if (currentSolutionCost < preSolutionCost
-                    && vrpSolutionK_p1.isNumberOfRoutesValid()) {
+                    && vrpSolutionK_p1.isNumberOfRoutesValid() && vrpSolutionK_p1.isSolutionValid()) {
                 vrpSolutionK = vrpSolutionK_p1;
                 preSolutionCost = currentSolutionCost;
                 if (currentSolutionCost < bestSolutionCost) {
@@ -162,6 +167,10 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
             recreateRouletteWheel.updateWeight(recreateStrategies.indexOf(currentRecreateStrategy), currentSolutionType);
             runCounter++;
             continueSearchSolutionFlag = continueToSearch(runCounter, solutionAcceptor.canTerminateSearching());
+            if(bestSolution == null && continueSearchSolutionFlag == false) {
+                continueSearchSolutionFlag = true;
+                runCounter = runCounter / 2;
+            }
             if (logger != null) {
                 logger.addSolutionCost(vrpSolutionK.getSolutionCost());
             }
@@ -220,7 +229,7 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
         protected int numOfInitSolution;
         protected ICostCalculator costCalculator;
         protected IDistanceCalculator distanceCalculator;
-        protected GenerateClusteringInitialSolutionStrategy generateInitialSolutionStrategy;
+        protected IGenerateInitialSolutionStrategy generateInitialSolutionStrategy;
         protected ArrayList<IRuinStrategy> ruinStrategies;
         protected ArrayList<IRecreateStrategy> recreateStrategies;
         protected ISolutionAcceptor solutionAcceptor;
@@ -246,7 +255,7 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
             return this;
         }
 
-        public Builder setInitializeSolutionStrategy(GenerateClusteringInitialSolutionStrategy generateInitialSolution) {
+        public Builder setInitializeSolutionStrategy(IGenerateInitialSolutionStrategy generateInitialSolution) {
             this.generateInitialSolutionStrategy = generateInitialSolution;
             return this;
         }
