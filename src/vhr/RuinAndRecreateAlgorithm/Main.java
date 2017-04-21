@@ -23,10 +23,10 @@ import java.util.stream.Collectors;
  */
 public class Main {
     public static void main(String[] args) {
-        String fileName = "./data/A-VRP/A-n37-k6.vrp";
-        String routeSolutionFileName = "./solutions/A-VRP/A-n37-k6.csv";
-        String logCostFileName = "./solutions/A-VRP/A-n37-k6-cost.csv";
-        String logSearchFileName = "./solutions/A-VRP/A-n37-k6.log";
+        String fileName = "./data/A-VRP/A-n65-k9.vrp";
+        String routeSolutionFileName = "./solutions/A-VRP/A-n65-k9.csv";
+        String logCostFileName = "./solutions/A-VRP/A-n65-k9.csv";
+        String logSearchFileName = "./solutions/A-VRP/A-n65-k9.log";
         long randomSeed = 0;
         IDataExtract dataExtract = new DataSetReader();
         IDistanceCalculator distanceCalculator = new Euclid2DDistanceCalculator();
@@ -37,7 +37,7 @@ public class Main {
                     .setDataFileName(fileName)
                     .setCostCalculator(costCalculator)
                     .setDistanceCalculator(distanceCalculator)
-                    .setMaxTruck(6)
+                    .setMaxTruck(9)
                     .build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -45,16 +45,13 @@ public class Main {
 
         IGenerateInitialSolutionStrategy generateInitialSolutionStrategy = new IncreaseRadicalStrategy();
         cvrpInstance.toCSV(fileName.replace(".vrp", ".csv"));
-//        GenerateClusteringInitialSolutionStrategy generateInitialSolutionStrategy =
-//                new GenerateClusteringInitialSolutionStrategy
-//                        .Builder(randomSeed).build();
         IRuinStrategy randomRuinStrategy = new RandomRuinStrategy.Builder().build();
         IRuinStrategy sequentialRuinStrategy = new SequentialRuinStrategy.Builder().build();
         IRuinStrategy radicalRuinStrategy = new RadicalRuinStrategy();
         IRecreateStrategy recreateStrategy = new GreedyInsertionStrategy.Builder(cvrpInstance, costCalculator, distanceCalculator).build();
-        int maxRun = 50000;
+        int maxRun = 500000;
 
-        // TODO: need to work on intial temp
+        // TODO: need to work on initial temp
         IVRPAlgorithm ruinAndRecreateAlg = new RuinAndRecreateAlgorithm.Builder(costCalculator, distanceCalculator)
                 .setInitializeSolutionStrategy(generateInitialSolutionStrategy)
                 .addRuinStrategies(randomRuinStrategy)

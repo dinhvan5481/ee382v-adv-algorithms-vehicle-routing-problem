@@ -3,6 +3,7 @@ package vhr.RuinAndRecreateAlgorithm.InitializeSolution;
 import vhr.core.*;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -45,51 +46,39 @@ public class IncreaseRadicalStrategy implements IGenerateInitialSolutionStrategy
     }
 
     private void addCustomersToRoute(VRPInstance vrpInstance, VRPSolution vrpSolution, Collection<Node> customerNodes) {
-        Customer depot = vrpInstance.getDepot();
-        AbstractCoordinate baseVector = ((AbstractCoordinate) depot.getCoordinate())
-                .substract((AbstractCoordinate)baseCustomer.getCoordinate());
-
-        customerNodes.forEach((Node node) -> node.thetaFrom(baseVector));
-        List<Node> customerNodesWithNegativeTheta = customerNodes.stream()
-                .filter(n -> n.getTheta() < 0).collect(Collectors.toList());
-
-        List<Node> customerNodesWIthPositiveTheta = customerNodes.stream()
-                .filter(n -> n.getTheta() >= 0).collect(Collectors.toList());
-
-        customerNodesWIthPositiveTheta.sort(Comparator.comparingDouble(Node::getTheta));
-        VehicleRoute vehicleRoute = vrpSolution.createNewRoute();
-        double totalDemand = 0;
-
-        for (Node node : customerNodesWIthPositiveTheta) {
-            Customer customer = vrpInstance.getCustomer(node.getId());
-            if (totalDemand + customer.getDemand() < vrpInstance.getCapacity()) {
-                totalDemand += customer.getDemand();
-            } else {
-                vehicleRoute = vrpSolution.createNewRoute();
-                totalDemand = customer.getDemand();
-            }
-            vehicleRoute.addCustomer(customer.getId());
+        int numOfRoutes = vrpInstance.getMaxTruck();
+        ArrayList<VehicleRoute> routes = new ArrayList<>(numOfRoutes);
+        ArrayList<Integer> customerIds = new ArrayList<>(vrpInstance.getCustomerIds());
+        for (int i = 0; i < numOfRoutes; i++) {
+            routes.add(vrpSolution.createNewRoute());
         }
 
-        for (Node node : customerNodesWithNegativeTheta) {
-            Customer customer = vrpInstance.getCustomer(node.getId());
-            if (totalDemand + customer.getDemand() < vrpInstance.getCapacity()) {
-                totalDemand += customer.getDemand();
-            } else {
-                vehicleRoute = vrpSolution.createNewRoute();
-                totalDemand = customer.getDemand();
-            }
-            vehicleRoute.addCustomer(customer.getId());
+        Collections.shuffle(customerIds);
+        Collections.shuffle(routes);
+        while (customerIds.size() > 0) {
+            int customerIdIndex = ThreadLocalRandom.current().nextInt(customerIds.size());
+            int routeIndex = ThreadLocalRandom.current().nextInt(routes.size());
+            VehicleRoute route = routes.get(routeIndex);
+            route.addCustomer(customerIds.get(customerIdIndex));
+            customerIds.remove(customerIdIndex);
         }
+
 
     }
 
     private void buildDeliverRoute(VRPInstance vrpInstance, VehicleRoute route, HashMap<Integer, Node> customerNodes) {
+        if(customerNodes.size() == 0) {
+            return;
+        }
         ArrayList<Node> customerNodeList = new ArrayList<>();
         ArrayList<Node> leftSize = new ArrayList<>();
         ArrayList<Node> rightSize = new ArrayList<>();
         route.getCustomerKeys().forEach(id -> customerNodeList.add(customerNodes.get(id)));
-        Node farthestCustomerNode = customerNodeList.stream().max(Comparator.comparing(Node::getDistance)).get();
+
+        Node farthestCustomerNode = customerNodeList.stream().max(Comparator.comparing(Node::getDistance)).orElse(null);
+        if(farthestCustomerNode == null) {
+            return;
+        }
         Customer farthestCustomer = vrpInstance.getCustomer(farthestCustomerNode.getId());
         Coordinate2D p0 = (Coordinate2D) vrpInstance.getDepot().getCoordinate();
         Coordinate2D p1 = (Coordinate2D) vrpInstance.getCustomer(farthestCustomerNode.getId()).getCoordinate();
