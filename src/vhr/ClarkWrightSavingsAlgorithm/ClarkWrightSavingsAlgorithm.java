@@ -1,9 +1,6 @@
 package vhr.ClarkWrightSavingsAlgorithm;
 
-import vhr.core.Customer;
-import vhr.core.IVRPAlgorithm;
-import vhr.core.VRPInstance;
-import vhr.core.VRPSolution;
+import vhr.core.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,17 +18,73 @@ public class ClarkWrightSavingsAlgorithm implements IVRPAlgorithm {
 
     @Override
     public VRPSolution solve(VRPInstance vrpInstance) throws Exception {
+        List<CWSavingPath> cwSavingPaths = new ArrayList<>();
+        HashSet<Integer> servedCustomers = new HashSet<>();
+        HashSet<Integer> headerCustomer;
+        VRPSolution vrpSolution = new VRPSolution(vrpInstance);
         buildSavingCostTable(vrpInstance);
         List<CWSaving> cwSavingsInOrder = cwSavingHashSet.stream()
                 .sorted(Collections.reverseOrder(Comparator.comparingDouble(CWSaving::getSavingCost)))
                 .collect(Collectors.toList());
 
+        CWSavingPath currentCWSavingPath;
+        boolean isMergedToAPath = false;
+        for (CWSaving cwSaving : cwSavingsInOrder) {
+            isMergedToAPath = false;
+            currentCWSavingPath = null;
+            for (CWSavingPath cwSavingPath : cwSavingPaths) {
+                if(cwSavingPath.add(cwSaving)) {
+                    markServedCustomer(servedCustomers, cwSaving);
+                    isMergedToAPath = true;
+                    currentCWSavingPath = cwSavingPath;
+                    break;
+                }
+            }
+            if(!isMergedToAPath && !isContainServeredCustomer(servedCustomers, cwSaving)) {
+                CWSavingPath cwSavingPath = new CWSavingPath(vrpInstance);
+                cwSavingPath.add(cwSaving);
+                cwSavingPaths.add(cwSavingPath);
+                markServedCustomer(servedCustomers, cwSaving);
+                currentCWSavingPath = cwSavingPath;
+            }
+            if(currentCWSavingPath == null) {
+                continue;
+            }
+            for (int i = 0; i < cwSavingPaths.size() - 1; i++) {
+                if(currentCWSavingPath.equals(cwSavingPaths.get(i))) {
+                    continue;
+                }
+                CWSavingPath megedPath = cwSavingPaths.get(i).merge(cwSavingPaths.get(i));
+                if(megedPath != null) {
+                    cwSavingPaths.remove(i);
+                    cwSavingPaths.remove(currentCWSavingPath);
+                    cwSavingPaths.add(megedPath);
+                    break;
+                }
+            }
+        }
+
+
         return null;
+    }
+
+    private void markServedCustomer(HashSet<Integer> servedCustomers, CWSaving cwSaving) {
+        if(!servedCustomers.contains(cwSaving.getCustomerId1())) {
+            servedCustomers.add(cwSaving.getCustomerId1());
+        }
+        if(!servedCustomers.contains(cwSaving.getCustomerId2())) {
+            servedCustomers.add(cwSaving.getCustomerId2());
+        }
+
+    }
+
+    private boolean isContainServeredCustomer(HashSet<Integer> servedCustomers, CWSaving cwSaving) {
+        return servedCustomers.contains(cwSaving.getCustomerId1()) || servedCustomers.contains(cwSaving.getCustomerId2());
     }
 
     private void buildSavingCostTable(VRPInstance vrpInstance) {
         Customer depot = vrpInstance.getDepot();
-        vrpInstance.getCustomerIds().forEach(id -> {
+/*        vrpInstance.getCustomerIds().forEach(id -> {
             CWSaving cwSaving = new CWSaving(depot.getId(), id);
             try {
                 cwSaving.calculateSavingCost(vrpInstance);
@@ -40,11 +93,11 @@ public class ClarkWrightSavingsAlgorithm implements IVRPAlgorithm {
                 return;
             }
             cwSavingHashSet.add(cwSaving);
-        });
+        });*/
         ArrayList<Integer> customerIds = new ArrayList<>(vrpInstance.getCustomerIds());
-        for (int index = 0; index < customerIds.size() - 2; index++) {
+        for (int index = 0; index < customerIds.size() - 1; index++) {
             Customer customer1 = vrpInstance.getCustomer(customerIds.get(index));
-            for (int innerIndex = 0; innerIndex < customerIds.size() - 1; innerIndex++) {
+            for (int innerIndex = index + 1; innerIndex < customerIds.size(); innerIndex++) {
                 Customer customer2 = vrpInstance.getCustomer(customerIds.get(innerIndex));
                 CWSaving cwSaving = new CWSaving(customer1.getId(), customer2.getId());
                 try {
@@ -59,38 +112,157 @@ public class ClarkWrightSavingsAlgorithm implements IVRPAlgorithm {
     }
 
     private class CWSavingPath {
-        private HashSet<CWSaving> cwSavingHashMap;
+        private VRPInstance vrpInstance;
+        private ArrayList<CWSaving> cwSavingPath;
         private HashSet<Integer> customerIds;
+        private double totalDemand;
+        private int headCustomerId;
+        private int tailCustomerId;
 
-        public CWSavingPath() {
-            cwSavingHashMap = new HashSet<>();
+        public CWSavingPath(VRPInstance vrpInstance) {
+            this.vrpInstance = vrpInstance;
+            cwSavingPath = new ArrayList<>();
             customerIds = new HashSet<>();
+            totalDemand = 0;
+            headCustomerId = -1;
+            tailCustomerId = -1;
         }
 
-        public void add(CWSaving cwSaving) {
-            if(cwSavingHashMap.contains(cwSaving)) {
-                return;
+        public boolean add(CWSaving cwSaving) {
+            Customer customer1 = vrpInstance.getCustomer(cwSaving.getCustomerId1());
+            Customer customer2 = vrpInstance.getCustomer(cwSaving.getCustomerId2());
+            if(cwSavingPath.size() == 0) {
+                cwSavingPath.add(cwSaving);
+                totalDemand += customer1.getDemand();
+                totalDemand += customer2.getDemand();
+                customerIds.add(customer1.getId());
+                customerIds.add(customer2.getId());
+                headCustomerId = customer1.getId();
+                tailCustomerId = customer2.getId();
+                return true;
             }
-            cwSavingHashMap.add(cwSaving);
-            if(!customerIds.contains(cwSaving.getCustomerId1())){
-                customerIds.add(cwSaving.getCustomerId1());
+
+            if(totalDemand + customer1.getDemand() > vrpInstance.getCapacity()
+                    && totalDemand + customer2.getDemand() > vrpInstance.getCapacity() ) {
+                return false;
             }
-            if(!customerIds.contains(cwSaving.getCustomerId2())){
-                customerIds.add(cwSaving.getCustomerId2());
+            if(!cwSaving.hasCustomerId(headCustomerId) && !cwSaving.hasCustomerId(tailCustomerId)) {
+                return false;
             }
+            if(cwSaving.hasCustomerId(headCustomerId) && cwSaving.hasCustomerId(tailCustomerId)) {
+                return false;
+            }
+            if(customerIds.contains(cwSaving.getCustomerId1()) && customerIds.contains(cwSaving.getCustomerId2())) {
+                return false;
+            }
+
+            if(cwSaving.hasCustomerId(headCustomerId)) {
+                int anotherEnd = cwSaving.getAnotherEndOf(headCustomerId);
+                if(totalDemand + vrpInstance.getCustomer(anotherEnd).getDemand() > vrpInstance.getCapacity()) {
+                    return false;
+                }
+                cwSavingPath.add(0, cwSaving);
+                headCustomerId = anotherEnd;
+                totalDemand += vrpInstance.getCustomer(anotherEnd).getDemand();
+            }
+
+            if(cwSaving.hasCustomerId(tailCustomerId)) {
+                int anotherEnd = cwSaving.getAnotherEndOf(tailCustomerId);
+                if(totalDemand + vrpInstance.getCustomer(anotherEnd).getDemand() > vrpInstance.getCapacity()) {
+                    return false;
+                }
+                cwSavingPath.add(cwSavingPath.size(), cwSaving);
+                tailCustomerId = anotherEnd;
+                totalDemand += vrpInstance.getCustomer(anotherEnd).getDemand();
+            }
+            addCustomerIds(cwSaving);
+            return true;
+        }
+
+        public CWSavingPath merge(CWSavingPath anotherPath){
+            if(totalDemand + anotherPath.totalDemand > vrpInstance.getCapacity()) {
+                return null;
+            }
+            if(headCustomerId != anotherPath.headCustomerId && headCustomerId != anotherPath.tailCustomerId
+                    && tailCustomerId != anotherPath.headCustomerId && tailCustomerId != anotherPath.tailCustomerId) {
+                    return null;
+                }
+
+            CWSavingPath mergedPath = new CWSavingPath(vrpInstance);
+            mergedPath.totalDemand = totalDemand + anotherPath.totalDemand;
+            if(headCustomerId == anotherPath.headCustomerId || tailCustomerId == anotherPath.tailCustomerId) {
+                mergedPath.headCustomerId = anotherPath.tailCustomerId;
+                mergedPath.tailCustomerId = tailCustomerId;
+                Collections.reverse(anotherPath.cwSavingPath);
+                mergedPath.cwSavingPath.addAll(anotherPath.cwSavingPath);
+                mergedPath.cwSavingPath.addAll(cwSavingPath);
+            }
+
+            if(headCustomerId == anotherPath.tailCustomerId || tailCustomerId == anotherPath.headCustomerId) {
+                mergedPath.headCustomerId = anotherPath.headCustomerId;
+                mergedPath.tailCustomerId = tailCustomerId;
+                mergedPath.cwSavingPath.addAll(anotherPath.cwSavingPath);
+                mergedPath.cwSavingPath.addAll(cwSavingPath);
+            }
+
+            return mergedPath;
+        }
+
+        private LinkedList<Integer> buildRoute() {
+            if(headCustomerId <= 0 || tailCustomerId <= 0) {
+                return null;
+            }
+            LinkedList<Integer> path = new LinkedList<>();
+            path.push(headCustomerId);
+            int customerId1 = headCustomerId;
+            int customerId2;
+            for (int i = 0; i < cwSavingPath.size(); i++) {
+                customerId2 = cwSavingPath.get(i).getAnotherEndOf(customerId1);
+                path.push(customerId2);
+                customerId1 = customerId2;
+            }
+            return  path;
         }
 
         public HashSet<CWSaving> getCWSaving(int customerId) {
-            return cwSavingHashMap.stream().filter(cwsaving -> cwsaving.hasCustomerId(customerId))
+            return cwSavingPath.stream().filter(cwsaving -> cwsaving.hasCustomerId(customerId))
                     .collect(Collectors.toCollection(HashSet::new));
         }
 
         public void removeCWSaving(CWSaving cwSaving) {
-            cwSavingHashMap.remove(cwSaving);
+            cwSavingPath.remove(cwSaving);
         }
 
         public boolean contains(CWSaving cwSaving) {
             return customerIds.contains(cwSaving.getCustomerId1()) || customerIds.contains(cwSaving.getCustomerId2());
+        }
+
+        private void addCustomerIds(CWSaving cwSaving) {
+            customerIds.add(cwSaving.getCustomerId1());
+            customerIds.add(cwSaving.getCustomerId2());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if(o == null || o.getClass() != getClass()) {
+                return false;
+            }
+            CWSavingPath other = (CWSavingPath)o;
+            if(other.cwSavingPath.size() != cwSavingPath.size()) {
+                return false;
+            }
+            for (int i = 0; i < cwSavingPath.size(); i++) {
+                if(!cwSavingPath.get(i).equals(other.cwSavingPath.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            List<Integer> orderedCustomerIds = customerIds.stream().sorted().collect(Collectors.toList());
+            return orderedCustomerIds.hashCode();
         }
     }
 
@@ -141,7 +313,21 @@ public class ClarkWrightSavingsAlgorithm implements IVRPAlgorithm {
             if(!hasCustomerId(customerId)) {
                 return -1;
             }
-            return customerId == customerId1 ? customerId1 : customerId2;
+            return customerId == customerId1 ? customerId2 : customerId1;
+        }
+
+        public int getJoinedCustomerId(CWSaving anotherCWSaving) {
+            int joinedCustomerId = -1;
+            if(anotherCWSaving == this) {
+                return joinedCustomerId;
+            }
+            if(hasCustomerId(anotherCWSaving.getCustomerId1())) {
+                joinedCustomerId = anotherCWSaving.getCustomerId1();
+            }
+            if(hasCustomerId(anotherCWSaving.getCustomerId2())) {
+                joinedCustomerId = anotherCWSaving.getCustomerId2();
+            }
+            return joinedCustomerId;
         }
 
         public boolean hasCustomerId(int customerId) {
