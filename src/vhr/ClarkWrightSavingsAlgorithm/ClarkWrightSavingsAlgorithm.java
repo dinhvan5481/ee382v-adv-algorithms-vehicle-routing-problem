@@ -40,7 +40,7 @@ public class ClarkWrightSavingsAlgorithm implements IVRPAlgorithm {
                     break;
                 }
             }
-            if(!isMergedToAPath && !isContainServeredCustomer(servedCustomers, cwSaving)) {
+            if(!isMergedToAPath && !iscontainserveredcustomer(servedCustomers, cwSaving)) {
                 CWSavingPath cwSavingPath = new CWSavingPath(vrpInstance);
                 cwSavingPath.add(cwSaving);
                 cwSavingPaths.add(cwSavingPath);
@@ -54,7 +54,7 @@ public class ClarkWrightSavingsAlgorithm implements IVRPAlgorithm {
                 if(currentCWSavingPath.equals(cwSavingPaths.get(i))) {
                     continue;
                 }
-                CWSavingPath megedPath = cwSavingPaths.get(i).merge(cwSavingPaths.get(i));
+                CWSavingPath megedPath = currentCWSavingPath.merge(cwSavingPaths.get(i));
                 if(megedPath != null) {
                     cwSavingPaths.remove(i);
                     cwSavingPaths.remove(currentCWSavingPath);
@@ -68,6 +68,13 @@ public class ClarkWrightSavingsAlgorithm implements IVRPAlgorithm {
         return null;
     }
 
+    private boolean isAInteriorCustomer(int customerId, HashSet<CWSavingPath> cwSavingPaths) {
+        CWSavingPath cwSavingPath = cwSavingPaths.stream()
+                .filter(p -> p.headCustomerId == customerId || p.tailCustomerId == customerId)
+                .findFirst().orElse(null);
+        return cwSavingPath == null;
+    }
+
     private void markServedCustomer(HashSet<Integer> servedCustomers, CWSaving cwSaving) {
         if(!servedCustomers.contains(cwSaving.getCustomerId1())) {
             servedCustomers.add(cwSaving.getCustomerId1());
@@ -78,9 +85,10 @@ public class ClarkWrightSavingsAlgorithm implements IVRPAlgorithm {
 
     }
 
-    private boolean isContainServeredCustomer(HashSet<Integer> servedCustomers, CWSaving cwSaving) {
+    private boolean iscontainserveredcustomer(HashSet<Integer> servedCustomers, CWSaving cwSaving) {
         return servedCustomers.contains(cwSaving.getCustomerId1()) || servedCustomers.contains(cwSaving.getCustomerId2());
     }
+
 
     private void buildSavingCostTable(VRPInstance vrpInstance) {
         Customer depot = vrpInstance.getDepot();
