@@ -137,6 +137,10 @@ public class VRPInstance {
         return costCalculator;
     }
 
+    public IDistanceCalculator getDistanceCalculator() {
+        return distanceCalculator;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

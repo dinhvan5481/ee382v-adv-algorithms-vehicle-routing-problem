@@ -13,8 +13,8 @@ public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
     protected int MAX_MEMORY_BEST_PATH = 1000;
     protected HashMap<Integer, BestInsertPositionAndCostHitCounter> bestInsertPositionAndCostHitCounterHashMap;
 
-    public GreedyInsertionStrategy(VRPInstance vrpInstance, ICostCalculator costCalculator, IDistanceCalculator distanceCalulator) {
-        super(vrpInstance, costCalculator, distanceCalulator);
+    public GreedyInsertionStrategy(VRPInstance vrpInstance, ICostCalculator costCalculator, IDistanceCalculator distanceCalculator) {
+        super(vrpInstance, costCalculator, distanceCalculator);
         bestInsertPositionAndCostHitCounterHashMap = new HashMap<>(MAX_MEMORY_BEST_PATH);
     }
 
