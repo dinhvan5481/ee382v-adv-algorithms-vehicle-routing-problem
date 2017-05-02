@@ -55,7 +55,7 @@ def main():
             pyplot.plot([customer_from['xCord'], customer_to['xCord']], [customer_from['yCord'], customer_to['yCord']],
                         'yo')
             pyplot.plot([customer_from['xCord'], customer_to['xCord']], [customer_from['yCord'], customer_to['yCord']],
-                        'C{}'.format(color_cycle_counter))
+                        'b')
 
         color_cycle_counter += 1
 
