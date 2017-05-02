@@ -161,6 +161,7 @@ public class GreedyInsertionStrategy extends AbstractRecreateStrategy {
         }
     }
 
+    //TODO: need to implement hashCode function, and swich bestInsertPositionAndCostHitCounterHashMap to hash set
     private class BestInsertPositionAndCostHitCounter {
         private InsertPositionAndCost insertPositionAndCost;
         private int hitCounter;
