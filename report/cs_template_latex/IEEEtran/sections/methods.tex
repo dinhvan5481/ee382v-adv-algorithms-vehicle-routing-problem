@@ -1,0 +1,35 @@
+\documentclass[../main.tex]{}
+\begin{document}
+
+\subsection{Clarke Wright Saving Algorithm}
+The Clarke and Wright algorithm \cite{clarke_wright} is one of the earliest, and most popular heuristic algorithm for the VRP due to its speed, simplicity, and ease of adjustment to handle various constraints in real-life applications. Clarke Wright saving algorithm works equally well for both directed and undirected problems. The algorithm is built on a basic simple idea: maximize saving cost within a route, hence minimize total cost. Consider a depot D and n demand points. Suppose that initially the solution to the VRP consists of using n vehides and dispatching one vehicle to each one of the n demand points. The total cost of this solution is:
+\[ C = 2\sum\limits_{i=1}^n d(D, i)\]
+where d(i, j) is a function calculate distance between point i and , j, and C is total cost. To get a better solution, we now can combine 2 customers served by single vehicle on a single trip, the total distance we can save after combined is:
+\begin{eqnarray}
+s(i, j) & = & 2d(D, i) + 2d(D, j) \nonumber \\
+&& -\: [d(D, i) + d(D, j) + d(i, j)] \nonumber \\
+& = & d(D, i) + d(D, j) - d(i, j)
+\end{eqnarray}•
+\begin{algorithm}
+\caption{Clarke Wright saving alorithm}\label{alg:clarke_wright}
+\textbf{Step 1: Savings computation}
+\flushleft
+\begin{itemize}
+\item Compute $s_{ij} \forall(i, j) \subset E$.
+\item Sort $s_{ij}$
+\end{itemize}
+\textbf{Step 2:  Route Extension}
+\flushleft
+\begin{itemize}
+\item for each route $(0, i, ..., j, 0)$
+\item Determine the first saving ${s_{ki}}$ or ${s_{jl}}$ that can feasibly be used to merge the current route with another route ending with ${(k,0)}$ or starting with ${(0,l)}$.
+\item Implement the merge and repeat this operation to the current route.
+\item If not feasible merge exists, consider the next route and reapply the same operations.
+\item Stop when not route merge is feasible.
+\end{itemize}
+\end{algorithm}
+
+\subsection{Ruin and Recreate Algorithms}
+The idea of ruin and recreate were introduced first time by Dees and Smith (1981) in their Rip-Up and Reroute strategies for wiring point-to-point connections in electronic design automation. Shaw (1998) introduced Large Neighborhood Search (LNS) wherein the ruin phase is implemented as the removal of related customers (related in terms of time, distance and being served by the same vehicle). The term Ruin \& Recreate (R\&R) was introduced by Schrimpf et al. (2000) who applied the technique to a number of prominent problems including the TSP and VRPTW. They ruined solutions by removing either randomly selected customers, customers within a certain radius or consecutive customers in a single string. The solution is recreated by greedily reinserting the removed customers in a random order at minimum cost. The R\&R algorithm has main stage. First, remove customers from a solution. Second, reinsert removed customers from first step to gain a better solution. The general framework for 
+
+\end{document}
