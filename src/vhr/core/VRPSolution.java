@@ -6,6 +6,7 @@ package vhr.core;
 
 
 import javafx.util.Builder;
+import vhr.utils.LogWriteUtil;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -90,14 +91,12 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            appendStringLine(sb, routeId.toString());
         }
         return sb.toString();
     }
 
     public void toCSV(String fileName) {
         StringBuilder sb = new StringBuilder();
-        FileWriter fileWriter = null;
         routes.values().forEach((VehicleRoute route) -> {
             sb.append(vrpInstance.getDepot().getId() + " ");
             route.route.forEach((Integer customerId) -> {
@@ -106,15 +105,7 @@ public class VRPSolution implements Comparable<VRPSolution>, Cloneable {
             sb.append(vrpInstance.getDepot().getId());
             appendStringLine(sb, "");
         });
-        try {
-            fileWriter = new FileWriter(fileName);
-            fileWriter.write(sb.toString(), 0, sb.length());
-            fileWriter.flush();
-            fileWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        LogWriteUtil.writeToFile(fileName, sb.toString(), false);
     }
 
     @Override

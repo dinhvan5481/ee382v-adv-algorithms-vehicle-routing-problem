@@ -27,12 +27,9 @@ public class ClarkWrightSavingsAlgorithm implements IVRPAlgorithm {
         HashSet<Integer> remainUnservedCustomers = new HashSet<>();
         VRPSolution vrpSolution = new VRPSolution(vrpInstance);
         buildSavingCostTable(vrpInstance);
-        int numberOfSavingCost = cwSavingHashSet.size();
-        double ruinRate = 0.9;
+
         List<CWSaving> cwSavingsInOrder = cwSavingHashSet.stream()
                 .sorted(Comparator.comparingDouble(CWSaving::getCost))
-                .limit((long) Math.floor(ruinRate * numberOfSavingCost))
-                .sorted(Collections.reverseOrder(Comparator.comparingDouble(CWSaving::getSavingCost)))
                 .collect(Collectors.toList());
         int countOfUnservedCustomers = vrpInstance.getNumberOfCustomers();
         int runCounter = 0;

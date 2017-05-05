@@ -51,7 +51,6 @@ public class Main {
         IRecreateStrategy recreateStrategy = new GreedyInsertionStrategy.Builder(cvrpInstance, costCalculator, distanceCalculator).build();
         int maxRun = 500000;
 
-        // TODO: need to work on initial temp
         IVRPAlgorithm ruinAndRecreateAlg = new RuinAndRecreateAlgorithm.Builder(costCalculator, distanceCalculator)
                 .setInitializeSolutionStrategy(generateInitialSolutionStrategy)
                 .addRuinStrategies(randomRuinStrategy)

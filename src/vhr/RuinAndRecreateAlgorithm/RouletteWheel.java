@@ -1,9 +1,6 @@
 package vhr.RuinAndRecreateAlgorithm;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -40,31 +37,19 @@ public class RouletteWheel {
             return 0;
         }
         double sum = Arrays.stream(weights).sum();
+        double prevSum = 0;
+        List<Double> adjustedWeight = new ArrayList<>();
+        for (int i = 0; i < weights.length; i++) {
+            prevSum += weights[i] / sum;
+            adjustedWeight.add(i, prevSum);
+        }
         double rollValue = ThreadLocalRandom.current().nextDouble();
-        List<Double> adjustedWeight = Arrays.stream(weights).map(w -> rollValue*sum - w).boxed().collect(Collectors.toList());
-        double maxAdjustedWeight = adjustedWeight.stream().filter(w -> w <= 0).max(Double::compare).orElse(Double.valueOf(0));
-        int index = adjustedWeight.indexOf(maxAdjustedWeight);
-        if(index < 0) {
-            return ThreadLocalRandom.current().nextInt(0, weights.length);
+        for (int i = 0; i < adjustedWeight.size(); i++) {
+            if(rollValue - adjustedWeight.get(i) <= 0) {
+                return i;
+            }
         }
-        return index;
-
-//        int index = 0;
-//        double sum = Arrays.stream(weights).sum();
-//        double rollValue = ThreadLocalRandom.current().nextDouble();
-//        index  = Arrays.stream(weights).map(w -> w - w*sum).filter(w -> w <= 0).max().
-//        return indexOfMax;
-
-//        int[] largeArray     = {5,4,13,7,7,8,9,10,5};
-//        int   largestElement = findLargest(largeArray);
-//        int   index          = Arrays.asList(5,4,13,7,7,8,9,10,5).indexOf(largestElement);
-
-/*
-        if(weights.length == 1) {
-            return 0;
-        }
-        return ThreadLocalRandom.current().nextInt(0, weights.length);
-*/
+        return 0;
     }
 
     public void updateWeight(int index, SolutionType solutionType) {

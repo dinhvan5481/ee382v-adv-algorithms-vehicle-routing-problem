@@ -66,7 +66,9 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
     @Override
     public VRPSolution solve(VRPInstance vrpInstance) throws Exception {
         List<VRPSolution> initialSolutions = new ArrayList<>();
-        double ruinRate = 0.3;
+        List<Double> ruinRates = new ArrayList<>();
+        ruinRates.add(0.3);
+        ruinRates.add(0.5);
         int runCounter = 0;
         boolean continueSearchSolutionFlag = true;
         Collections.shuffle(ruinStrategies);
@@ -75,6 +77,7 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
         double rouletteWheelParameterSensitive = 0.6;
         ruinedRouletteWheel = new RouletteWheel(ruinStrategies.size(), rouletteWheelParameterSensitive);
         recreateRouletteWheel = new RouletteWheel(recreateStrategies.size(), rouletteWheelParameterSensitive);
+        RouletteWheel ruinRateRouletteWheel = new RouletteWheel(ruinRates.size(), rouletteWheelParameterSensitive);
         RouletteWheel.SolutionType currentSolutionType;
         IRuinStrategy currentRuinStrategy;
         IRecreateStrategy currentRecreateStrategy;
@@ -138,6 +141,7 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
         while (continueSearchSolutionFlag) {
             currentRuinStrategy = ruinStrategies.get(ruinedRouletteWheel.roll());
             currentRecreateStrategy = recreateStrategies.get(recreateRouletteWheel.roll());
+            double ruinRate = ruinRates.get(ruinRateRouletteWheel.roll());
             vrpSolutionK_p1 = currentRuinStrategy.ruin(vrpInstance, vrpSolutionK, ruinRate);
             vrpSolutionK_p1 = currentRecreateStrategy.recreate(vrpSolutionK_p1, currentRuinStrategy.getRemovedCustomerIds());
 
@@ -165,6 +169,7 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
             solutionAcceptor.updateAcceptor();
             ruinedRouletteWheel.updateWeight(ruinStrategies.indexOf(currentRuinStrategy), currentSolutionType);
             recreateRouletteWheel.updateWeight(recreateStrategies.indexOf(currentRecreateStrategy), currentSolutionType);
+            ruinRateRouletteWheel.updateWeight(ruinRates.indexOf(Double.valueOf(ruinRate)), currentSolutionType);
             runCounter++;
             continueSearchSolutionFlag = continueToSearch(runCounter, solutionAcceptor.canTerminateSearching());
             if(bestSolution == null && continueSearchSolutionFlag == false) {
@@ -177,6 +182,7 @@ public class RuinAndRecreateAlgorithm implements IVRPAlgorithm {
         }
 
         if(logger != null) {
+            logFileName = logFileName.replace(".csv", String.format("_%d.csv", (int)bestSolutionCost));
             logger.toCSV(logFileName);
         }
         return bestSolution;
