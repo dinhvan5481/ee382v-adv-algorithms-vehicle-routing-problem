@@ -31,7 +31,7 @@ s(i, j) & = & 2d(D, i) + 2d(D, j) \nonumber \\
 
 \subsection{Ruin and Recreate Algorithms}
 
-By performing ruin and recreation on current solutions frequently enough, the better solutions will be obtained. A set of random vehicle routes are created and their total vehicle distance is calculated. The Ruin and Recreate approach is applied frequently to obtain another set of vehicle routes that have the least of total vehicle distance.
+Ruin and recreate framework is introduced in \cite{ref:rr_break}. By performing ruin and recreation on current solutions frequently enough, the better solutions will be obtained. A set of random vehicle routes are created and their total vehicle distance is calculated. The Ruin and Recreate approach is applied frequently to obtain another set of vehicle routes that have the least of total vehicle distance.
 
 This approach starts with creating a set of initial vehicle routes: a random customer is selected, and combined with the depot location to create a base vector. The base vector starts to rotate clockwise with the depot location at the center and customers on the way are added to the route. If the route is over the vehicle capacity, a new route is created, and so on. Total vehicle distance is calculated for the initial routes.
 Next, some customers from each initial route are removed by different ruin strategies and then added back to the same route in different order or different route using greedy insertion recreation strategy by trying all possible locations to pick the least total vehicle distance.
