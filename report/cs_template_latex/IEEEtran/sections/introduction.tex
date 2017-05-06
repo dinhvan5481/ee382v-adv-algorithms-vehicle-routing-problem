@@ -1,0 +1,19 @@
+\documentclass[../main.tex]{}
+\begin{document}
+
+\IEEEPARstart{T}{he} Vehicle Routing Problem (VRP) is used to design an optimal route for a fleet of vehicles to service a set of customers, given a set of constraints. The VRP is used in supply chain management in the physical delivery of goods and services. There are several variants to the VRP. These are formulated based on the nature of the trans- ported goods, the quality of service required and the characteristics of the customers and the vehicles. The VRP is of the NP-hard type.
+Due to its wide applicability and its importance in determining efficient strategies for reducing operation costs in distribution networks, the vehicle routing problem has been study very extensively in the optimization field since its introduction. Today, many approaches to solve VRP can be categorized as exact methods, heuristic, and meta-heuristic methods. Exact methods have size limit of 50 - 100 orders depends on the VRP constraints. Current research focus on heuristic, and meta-heuristic to find approximate algorithms that are capable of finding high quality solutions in limited time, in order to be applicable to real-life problem instances that are characterized by large vehicle fleets and affect significantly logistics and distribution strategies.
+
+In its original introduction, VRP is stated to find optimal delivery routes of a fleet of gasoline delivery trucks between a bulk terminal and a number of service stations supplied by the terminal. The distance between any two locations is given and a demand for a given product is specified for the service stations.
+
+The VRP can be defined as the problem of designing least cost delivery routes from a depot to a set of geographically dispersed locations (customers) subject to a set of constraints.
+The classical VRP is defined as follows: Let G = (V, A) be a directed graph where V = \{$0, \ldots ,n$\} is the vertex set and A = \{$(i,j) : i,j \in V, i \neq j$\} is the arc set. Vertex 0 represents the depot whereas the remaining vertices correspond to customers. A fleet of m identical vehicles of capacity Q is based at the depot. The fleet size is given a priori or is a decision variable. Each customer i has a non-negative demand $q_i$. The cost of travel between $v_i$, and $v_k$ is $c_{v_i, v_k}$. A solution to a given VRP instance can be represented as a family of routes, denoted by $\varsigma$. Each route itself is a sequence of customer visits that are performed by a single vehicle, denoted by R = [$v_0,v_i, v_k, \ldots, v_0$] such that $v_i \in V$. The cost of the solution, and the value we aim to minimize, is given by the following formula:
+\begin{equation}
+argmin \sum_{R \in \varsigma} \sum_{v_i, v_j \in R} c_{v_i, v_j} \nonumber
+\end{equation}
+
+Capacitated Vehicle Routing Problem (CVRP) is the VRP where the vehicles have a capacity constraint they cannot exceed. Giving the vehicle’s capacity, customers’ demands, customers’ coordinates, and the depot’s coordinate, the goal is to find the set of routes that have the minimum total distances traversed by all vehicles, which means minimizing the transportation cost. In each route, a vehicle visits a subset of customers in a way that their total demands cannot exceed the vehicle capacity. 
+
+
+
+\end{document}

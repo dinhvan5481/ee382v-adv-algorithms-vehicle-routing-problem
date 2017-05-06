@@ -34,17 +34,17 @@ public class Main {
         String instanceNamePVRP = "P-VRP";
 
 
-//        runSolution(baseDataPath, baseSolutionPathRR, instanceNameAVRP);
-//        runSolution(baseDataPath, baseSolutionPathRR, instanceNameBVRP);
-//        runSolution(baseDataPath, baseSolutionPathRR, instanceNameCEVRP);
-//        runSolution(baseDataPath, baseSolutionPathRR, instanceNameFVRP);
-//        runSolution(baseDataPath, baseSolutionPathRR, instanceNamePVRP);
+        runSolution(baseDataPath, baseSolutionPathRR, instanceNameAVRP);
+        runSolution(baseDataPath, baseSolutionPathRR, instanceNameBVRP);
+        runSolution(baseDataPath, baseSolutionPathRR, instanceNameCEVRP);
+        runSolution(baseDataPath, baseSolutionPathRR, instanceNameFVRP);
+        runSolution(baseDataPath, baseSolutionPathRR, instanceNamePVRP);
 
-        runCWSAlgorithm(baseDataPath, baseSolutionPathCWS, instanceNameAVRP);
-        runCWSAlgorithm(baseDataPath, baseSolutionPathCWS, instanceNameBVRP);
-        runCWSAlgorithm(baseDataPath, baseSolutionPathCWS, instanceNameCEVRP);
-        runCWSAlgorithm(baseDataPath, baseSolutionPathCWS, instanceNameFVRP);
-        runCWSAlgorithm(baseDataPath, baseSolutionPathCWS, instanceNamePVRP);
+//        runCWSAlgorithm(baseDataPath, baseSolutionPathCWS, instanceNameAVRP);
+//        runCWSAlgorithm(baseDataPath, baseSolutionPathCWS, instanceNameBVRP);
+//        runCWSAlgorithm(baseDataPath, baseSolutionPathCWS, instanceNameCEVRP);
+//        runCWSAlgorithm(baseDataPath, baseSolutionPathCWS, instanceNameFVRP);
+//        runCWSAlgorithm(baseDataPath, baseSolutionPathCWS, instanceNamePVRP);
     }
 
     private static void runSolution(String baseDataPath, String baseSolutionPath, String instanceName) {

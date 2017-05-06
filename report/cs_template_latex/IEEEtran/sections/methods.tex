@@ -30,6 +30,32 @@ s(i, j) & = & 2d(D, i) + 2d(D, j) \nonumber \\
 \end{algorithm}
 
 \subsection{Ruin and Recreate Algorithms}
-The idea of ruin and recreate were introduced first time by Dees and Smith (1981) in their Rip-Up and Reroute strategies for wiring point-to-point connections in electronic design automation. Shaw (1998) introduced Large Neighborhood Search (LNS) wherein the ruin phase is implemented as the removal of related customers (related in terms of time, distance and being served by the same vehicle). The term Ruin \& Recreate (R\&R) was introduced by Schrimpf et al. (2000) who applied the technique to a number of prominent problems including the TSP and VRPTW. They ruined solutions by removing either randomly selected customers, customers within a certain radius or consecutive customers in a single string. The solution is recreated by greedily reinserting the removed customers in a random order at minimum cost. The R\&R algorithm has main stage. First, remove customers from a solution. Second, reinsert removed customers from first step to gain a better solution. The general framework for 
+
+By performing ruin and recreation on current solutions frequently enough, the better solutions will be obtained. A set of random vehicle routes are created and their total vehicle distance is calculated. The Ruin and Recreate approach is applied frequently to obtain another set of vehicle routes that have the least of total vehicle distance.
+
+This approach starts with creating a set of initial vehicle routes: a random customer is selected, and combined with the depot location to create a base vector. The base vector starts to rotate clockwise with the depot location at the center and customers on the way are added to the route. If the route is over the vehicle capacity, a new route is created, and so on. Total vehicle distance is calculated for the initial routes.
+Next, some customers from each initial route are removed by different ruin strategies and then added back to the same route in different order or different route using greedy insertion recreation strategy by trying all possible locations to pick the least total vehicle distance.
+ There are three ruin strategies are used to remove customers from existing solution: random ruin, sequential ruin, and least customer ruin. Random strategy removes customers randomly from all customers of all routes, which creates the effect of diversifying the removing process. Sequential strategy removes customers sequentially in a selected route. The least customer strategy removes all customers in the route that has the least customers.
+Greedy insertion strategy is used for the recreation of the solution by adding the removed customers back. This approach is to insert each removed customer to the cheapest possible route.
+
+\begin{algorithm}
+\caption{Ruin and recreate framework}\label{alg:RR}
+\flushleft
+\begin{itemize}
+\item create intial solution
+\item do {
+\flushleft
+\begin{itemize}
+\item choose ruin and recreate strategy
+\item ruin current solution
+\item recreate ruined solution
+\item if new solution better than current solution
+\item then accept new solution
+\item else accept new solution with probaility $e^{\frac{\Delta C}{T}}$
+\end{itemize}
+\item } while stop condition is not meet
+\item return best solution
+\end{itemize}
+\end{algorithm}
 
 \end{document}
